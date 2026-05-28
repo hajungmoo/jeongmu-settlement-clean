@@ -314,46 +314,46 @@ export default function App() {
     setPasswordInput("");
   }
 
- if (!isUnlocked) {
-  return (
-    <main className="flex min-h-screen items-center justify-center bg-[#0f172a] p-4 text-slate-100">
+if (!isUnlocked) {
+ return (
+  <main className="min-h-screen bg-[#0b1120] pb-28 text-slate-100">
       <form
         onSubmit={handleLogin}
-        className="w-full max-w-sm rounded-[2rem] border border-slate-700 bg-[#111827] p-6 shadow-xl shadow-black/30 backdrop-blur"
+        className="w-full max-w-sm rounded-[2rem] border border-slate-700 bg-[#111827] p-6 shadow-xl shadow-black/30"
       >
-          <div className="mb-5 text-center">
-            <p className="text-sm font-bold text-cyan-300">Pingpong Dreamers</p>
-            <h1 className="mt-1 text-2xl font-black text-white">핑퐁드림어스 정산파일</h1>
-            <p className="mt-2 text-sm text-slate-400">비밀번호를 입력하면 정산앱에 들어갈 수 있습니다.</p>
-          </div>
+        <div className="mb-5 text-center">
+          <p className="text-sm font-bold text-violet-300">Pingpong Dreamers</p>
+          <h1 className="mt-1 text-2xl font-black text-slate-100">핑퐁드림어스 정산파일</h1>
+          <p className="mt-2 text-sm text-slate-400">비밀번호를 입력하면 정산앱에 들어갈 수 있습니다.</p>
+        </div>
 
-          <input
-            type="password"
-            value={passwordInput}
-            onChange={(e) => setPasswordInput(e.target.value)}
-            placeholder="비밀번호"
-            className="w-full rounded-2xl border border-cyan-300/20 bg-slate-900/80 px-4 py-4 text-center text-lg font-bold text-white outline-none transition placeholder:text-slate-500 focus:border-cyan-400 focus:ring-2 focus:ring-cyan-400/20"
-          />
+        <input
+          type="password"
+          value={passwordInput}
+          onChange={(e) => setPasswordInput(e.target.value)}
+          placeholder="비밀번호"
+          className="w-full rounded-2xl border border-slate-700 bg-[#1a2336] px-4 py-4 text-center text-lg font-bold text-slate-100 outline-none placeholder:text-slate-500 focus:border-violet-400"
+        />
 
-          {loginError && <p className="mt-3 text-center text-sm font-bold text-rose-500">{loginError}</p>}
+        {loginError && <p className="mt-3 text-center text-sm font-bold text-rose-400">{loginError}</p>}
 
-          <button
-            type="submit"
-            className="mt-4 w-full rounded-2xl bg-gradient-to-r from-cyan-500 via-violet-600 to-fuchsia-600 px-4 py-4 font-black text-white shadow-lg shadow-cyan-500/20 transition active:scale-95"
-          >
-            로그인
-          </button>
+        <button
+          type="submit"
+          className="mt-4 w-full rounded-2xl bg-gradient-to-r from-violet-600 to-indigo-600 px-4 py-4 font-black text-white shadow-lg shadow-black/20 active:scale-95"
+        >
+          로그인
+        </button>
 
-          <p className="mt-4 text-center text-xs text-slate-500">비밀번호를 입력해주세요.</p>
-        </form>
-      </main>
-    );
-  }
+        <p className="mt-4 text-center text-xs text-slate-500">비밀번호를 입력해주세요.</p>
+      </form>
+    </main>
+  );
+}
 
   return (
     <main className="min-h-screen bg-[radial-gradient(circle_at_top_left,_#7c3aed55,_transparent_32%),radial-gradient(circle_at_top_right,_#06b6d455,_transparent_30%),radial-gradient(circle_at_bottom,_#ec489955,_transparent_35%),linear-gradient(135deg,_#020617,_#111827,_#1e1b4b)] pb-28 text-slate-100">
       <div className="mx-auto max-w-5xl space-y-5 p-4">
-        <header className="relative overflow-hidden rounded-[2rem] border border-cyan-300/20 bg-gradient-to-br from-slate-950 via-violet-950 to-cyan-950 p-6 text-white shadow-2xl shadow-cyan-500/20">
+       <header className="relative overflow-hidden rounded-[2rem] border border-slate-700 bg-gradient-to-br from-[#111827] via-[#172033] to-[#1e293b] p-6 text-slate-100 shadow-xl shadow-black/30">
           <div className="absolute -right-16 -top-16 h-48 w-48 rounded-full bg-cyan-400/25 blur-3xl" />
           <div className="absolute -bottom-20 -left-20 h-56 w-56 rounded-full bg-fuchsia-500/25 blur-3xl" />
           <div className="absolute left-1/2 top-1/2 h-40 w-40 -translate-x-1/2 -translate-y-1/2 rounded-full bg-violet-400/20 blur-3xl" />
