@@ -206,48 +206,88 @@ export default function App() {
     setTab("settlement");
   }
 
-  function parseBulkOrders() {
-    const parsed = splitLines(bulkText)
-      .map((line) => {
-        const parts = line.replaceAll(",", " ").split(" ").filter(Boolean);
-        if (parts.length < 2) return null;
+function parseBulkOrders() {
+  const ignoreWords = [
+    "택배비",
+    "총액",
+    "전잔액",
+    "입금",
+    "잔액",
+    "받았어요",
+    "발주",
+    "송금",
+  ];
 
-        const last = parts[parts.length - 1];
-        const qtyText = last
-          .replaceAll("장", "")
-          .replaceAll("개", "")
-          .replaceAll("켤레", "")
-          .replaceAll("벌", "")
-          .replaceAll("자루", "")
-          .replaceAll("박스", "")
-          .replaceAll("통", "")
-          .replaceAll("세트", "");
+  function getQtyFromLine(line) {
+    let total = 0;
 
-        const qty = Number(qtyText);
-        const rawName = parts.slice(0, -1).join(" ");
-        if (!rawName || !qty) return null;
+    const colorPatterns = [
+      "적색",
+      "빨강",
+      "빨",
+      "적",
+      "레드",
+      "검정",
+      "검",
+      "흑",
+      "블랙",
+    ];
 
-        return {
-          id: Date.now() + Math.random(),
-          date: today(),
-          buyer: bulkBuyer.trim(),
-          productName: findBestProductName(rawName),
-          qty,
-          done: false,
-        };
-      })
-      .filter(Boolean);
+    colorPatterns.forEach((word) => {
+      const regex = new RegExp(word + "\\s*(\\d+)", "g");
+      let match;
+      while ((match = regex.exec(line)) !== null) {
+        total += Number(match[1] || 0);
+      }
+    });
 
-    if (parsed.length === 0) {
-      alert("인식된 정산이 없습니다. 예: 테너지05 2장");
-      return;
+    const jangMatch = line.match(/(\d+)\s*장/);
+    if (jangMatch) {
+      total = Math.max(total, Number(jangMatch[1]));
     }
 
-    setOrders((prev) => [...parsed, ...prev]);
-    setBulkBuyer("");
-    setBulkText("");
-    setTab("settlement");
+    const gaeMatch = line.match(/(\d+)\s*개/);
+    if (gaeMatch) {
+      total = Math.max(total, Number(gaeMatch[1]));
+    }
+
+    return total || 1;
   }
+
+  const parsed = splitLines(bulkText)
+    .map((line) => {
+      const clean = line.trim();
+      if (!clean) return null;
+
+      if (ignoreWords.some((word) => clean.includes(word))) return null;
+
+      const matchedProduct = products.find((product) =>
+        normalizeName(clean).includes(normalizeName(product.name))
+      );
+
+      if (!matchedProduct) return null;
+
+      return {
+        id: Date.now() + Math.random(),
+        date: today(),
+        buyer: bulkBuyer.trim() || "카톡주문",
+        productName: matchedProduct.name,
+        qty: getQtyFromLine(clean),
+        done: false,
+      };
+    })
+    .filter(Boolean);
+
+  if (parsed.length === 0) {
+    alert("인식된 정산이 없습니다. 예: 테너지05 적1 검1");
+    return;
+  }
+
+  setOrders((prev) => [...parsed, ...prev]);
+  setBulkBuyer("");
+  setBulkText("");
+  setTab("settlement");
+}
 
   function updateOrder(id, key, value) {
     setOrders((prev) =>
