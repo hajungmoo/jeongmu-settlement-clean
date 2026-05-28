@@ -18,12 +18,27 @@ function koreanDate(value) {
   return `${d.getFullYear()}년 ${d.getMonth() + 1}월 ${d.getDate()}일`;
 }
 
+function normalizeName(text) {
+  return String(text || "").toLowerCase().replaceAll(" ", "").replaceAll("-", "");
+}
+
+function splitLines(text) {
+  return String(text || "")
+    .split(/
+?
+/)
+    .map((line) => line.trim())
+    .filter(Boolean);
+}
+
 export default function App() {
   const [tab, setTab] = useState("settlement");
   const [orders, setOrders] = useState([]);
   const [products, setProducts] = useState(defaultProducts);
   const [savedText, setSavedText] = useState("저장 준비");
   const [newProduct, setNewProduct] = useState({ name: "", buyPrice: "", sellPrice: "" });
+  const [bulkBuyer, setBulkBuyer] = useState("");
+  const [bulkText, setBulkText] = useState("");
 
   useEffect(() => {
     try {
@@ -88,6 +103,13 @@ export default function App() {
     );
   }, [calculatedOrders]);
 
+  function findBestProductName(rawName) {
+    const target = normalizeName(rawName);
+    const exact = products.find((product) => normalizeName(product.name) === target);
+    if (exact) return exact.name;
+    return rawName.trim();
+  }
+
   function addOrder(productName = products[0]?.name || "") {
     setOrders((prev) => [
       {
@@ -99,6 +121,48 @@ export default function App() {
       },
       ...prev,
     ]);
+    setTab("settlement");
+  }
+
+  function parseBulkOrders() {
+    const parsed = splitLines(bulkText)
+      .map((line) => {
+        const parts = line.replaceAll(",", " ").split(" ").filter(Boolean);
+        if (parts.length < 2) return null;
+
+        const last = parts[parts.length - 1];
+        const qtyText = last
+          .replaceAll("장", "")
+          .replaceAll("개", "")
+          .replaceAll("켤레", "")
+          .replaceAll("벌", "")
+          .replaceAll("자루", "")
+          .replaceAll("박스", "")
+          .replaceAll("통", "")
+          .replaceAll("세트", "");
+
+        const qty = Number(qtyText);
+        const rawName = parts.slice(0, -1).join(" ");
+        if (!rawName || !qty) return null;
+
+        return {
+          id: Date.now() + Math.random(),
+          date: today(),
+          buyer: bulkBuyer.trim(),
+          productName: findBestProductName(rawName),
+          qty,
+        };
+      })
+      .filter(Boolean);
+
+    if (parsed.length === 0) {
+      alert("인식된 정산이 없습니다. 예: 테너지05 2장");
+      return;
+    }
+
+    setOrders((prev) => [...parsed, ...prev]);
+    setBulkBuyer("");
+    setBulkText("");
     setTab("settlement");
   }
 
@@ -177,6 +241,11 @@ export default function App() {
             calculatedOrders={calculatedOrders}
             totals={totals}
             addOrder={addOrder}
+            bulkBuyer={bulkBuyer}
+            setBulkBuyer={setBulkBuyer}
+            bulkText={bulkText}
+            setBulkText={setBulkText}
+            parseBulkOrders={parseBulkOrders}
             updateOrder={updateOrder}
             deleteOrder={deleteOrder}
           />
@@ -202,13 +271,53 @@ export default function App() {
   );
 }
 
-function SettlementPage({ products, calculatedOrders, totals, addOrder, updateOrder, deleteOrder }) {
+function SettlementPage({
+  products,
+  calculatedOrders,
+  totals,
+  addOrder,
+  bulkBuyer,
+  setBulkBuyer,
+  bulkText,
+  setBulkText,
+  parseBulkOrders,
+  updateOrder,
+  deleteOrder,
+}) {
   return (
     <>
       <section className="grid grid-cols-1 gap-3 sm:grid-cols-3">
         <SummaryCard title="총 받는금액" value={won(totals.totalBuy)} />
         <SummaryCard title="총 판매금액" value={won(totals.totalSell)} />
         <SummaryCard title="총 정산금" value={won(totals.profit)} highlight />
+      </section>
+
+      <section className="rounded-3xl bg-white p-4 shadow-sm">
+        <h2 className="mb-3 text-lg font-black">대량 입력 자동정리</h2>
+        <div className="space-y-2">
+          <input
+            value={bulkBuyer}
+            onChange={(e) => setBulkBuyer(e.target.value)}
+            placeholder="주문자명, 비워도 됨"
+            className="w-full rounded-2xl border border-slate-200 bg-white px-3 py-3 outline-none"
+          />
+          <textarea
+            value={bulkText}
+            onChange={(e) => setBulkText(e.target.value)}
+            placeholder={"예시
+테너지05 2장
+테너지64 2장
+MXP 4개"}
+            rows={5}
+            className="w-full resize-none rounded-2xl border border-slate-200 bg-white px-3 py-3 outline-none"
+          />
+          <button
+            onClick={parseBulkOrders}
+            className="w-full rounded-2xl bg-violet-600 px-4 py-3 font-black text-white"
+          >
+            자동으로 정산 추가
+          </button>
+        </div>
       </section>
 
       <section className="rounded-3xl bg-white p-4 shadow-sm">
