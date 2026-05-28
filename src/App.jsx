@@ -189,34 +189,35 @@ export default function App() {
   }
 
   return (
-    <main className="min-h-screen bg-gradient-to-br from-violet-50 via-slate-100 to-blue-50 pb-28 text-slate-900">
+    <main className="min-h-screen bg-[radial-gradient(circle_at_top_left,_#ede9fe,_transparent_35%),radial-gradient(circle_at_top_right,_#dbeafe,_transparent_35%),linear-gradient(135deg,_#faf5ff,_#f0f9ff,_#ecfdf5)] pb-28 text-slate-900">
       <div className="mx-auto max-w-5xl space-y-5 p-4">
-        <header className="relative overflow-hidden rounded-[2rem] bg-gradient-to-br from-violet-700 via-indigo-700 to-slate-900 p-6 text-white shadow-xl shadow-violet-200">
-          <div className="absolute -right-12 -top-12 h-40 w-40 rounded-full bg-white/10 blur-2xl" />
-          <div className="absolute -bottom-16 -left-16 h-48 w-48 rounded-full bg-violet-300/20 blur-3xl" />
+        <header className="relative overflow-hidden rounded-[2rem] bg-gradient-to-br from-fuchsia-600 via-violet-700 to-cyan-700 p-6 text-white shadow-2xl shadow-violet-300/60">
+          <div className="absolute -right-12 -top-12 h-40 w-40 rounded-full bg-yellow-300/25 blur-2xl" />
+          <div className="absolute -bottom-16 -left-16 h-48 w-48 rounded-full bg-pink-300/30 blur-3xl" />
+          <div className="absolute left-1/2 top-1/2 h-32 w-32 -translate-x-1/2 -translate-y-1/2 rounded-full bg-cyan-300/20 blur-2xl" />
 
           <div className="relative z-10">
             <div className="mb-4 flex items-center justify-between gap-3">
-              <span className="rounded-full bg-white/15 px-3 py-1 text-xs font-bold text-violet-100 backdrop-blur">
+              <span className="rounded-full bg-white/20 px-3 py-1 text-xs font-bold text-white shadow-sm backdrop-blur">
                 {koreanDate(today())}
               </span>
-              <span className="rounded-full bg-emerald-400/20 px-3 py-1 text-xs font-bold text-emerald-100">
+              <span className="rounded-full bg-emerald-300/25 px-3 py-1 text-xs font-bold text-emerald-50 shadow-sm">
                 {savedText}
               </span>
             </div>
 
             <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
               <div>
-                <p className="text-sm font-bold text-violet-200">Pingpong Dreamus</p>
-                <h1 className="mt-1 text-3xl font-black tracking-tight sm:text-4xl">
+                <p className="inline-flex rounded-full bg-white/15 px-3 py-1 text-sm font-bold text-yellow-100 backdrop-blur">Pingpong Dreamus</p>
+                <h1 className="mt-3 text-3xl font-black tracking-tight drop-shadow-sm sm:text-4xl">
                   핑퐁드림어스 정산파일
                 </h1>
-                <p className="mt-2 text-sm text-violet-100">용품 주문 · 정산 · 가격 관리를 한 번에</p>
+                <p className="mt-2 text-sm font-medium text-cyan-50">용품 주문 · 정산 · 가격 관리를 한 번에</p>
               </div>
 
               <button
                 onClick={() => addOrder()}
-                className="rounded-2xl bg-white px-5 py-3 font-black text-violet-700 shadow-lg shadow-black/20 transition hover:scale-[1.02] active:scale-95"
+                className="rounded-2xl bg-gradient-to-r from-yellow-200 to-white px-5 py-3 font-black text-violet-800 shadow-xl shadow-black/20 transition hover:scale-[1.02] active:scale-95"
               >
                 + 정산 추가
               </button>
@@ -290,32 +291,32 @@ function SettlementPage({
         <SummaryCard title="총 정산금" value={won(totals.profit)} highlight />
       </section>
 
-      <section className="rounded-[1.7rem] border border-white/70 bg-white/90 p-4 shadow-lg shadow-slate-200/70 backdrop-blur">
+      <section className="rounded-[1.7rem] border border-white/80 bg-white/90 p-4 shadow-xl shadow-violet-100/70 backdrop-blur">
         <h2 className="mb-3 text-lg font-black">대량 입력 자동정리</h2>
         <div className="space-y-2">
           <input
             value={bulkBuyer}
             onChange={(e) => setBulkBuyer(e.target.value)}
             placeholder="주문자명, 비워도 됨"
-            className="w-full rounded-2xl border border-slate-200 bg-white px-3 py-3 outline-none focus:border-violet-400 focus:ring-2 focus:ring-violet-100"
+            className="w-full rounded-2xl border border-violet-100 bg-white px-3 py-3 outline-none transition focus:border-fuchsia-400 focus:ring-2 focus:ring-fuchsia-100"
           />
           <textarea
             value={bulkText}
             onChange={(e) => setBulkText(e.target.value)}
             placeholder={placeholderText}
             rows={5}
-            className="w-full resize-none rounded-2xl border border-slate-200 bg-white px-3 py-3 outline-none focus:border-violet-400 focus:ring-2 focus:ring-violet-100"
+            className="w-full resize-none rounded-2xl border border-violet-100 bg-white px-3 py-3 outline-none transition focus:border-fuchsia-400 focus:ring-2 focus:ring-fuchsia-100"
           />
           <button
             onClick={parseBulkOrders}
-            className="w-full rounded-2xl bg-gradient-to-r from-violet-600 to-indigo-600 px-4 py-3 font-black text-white shadow-lg shadow-violet-200 transition hover:scale-[1.01] active:scale-95"
+            className="w-full rounded-2xl bg-gradient-to-r from-fuchsia-600 via-violet-600 to-cyan-600 px-4 py-3 font-black text-white shadow-lg shadow-fuchsia-200 transition hover:scale-[1.01] active:scale-95"
           >
             자동으로 정산 추가
           </button>
         </div>
       </section>
 
-      <section className="rounded-[1.7rem] border border-white/70 bg-white/90 p-4 shadow-lg shadow-slate-200/70 backdrop-blur">
+      <section className="rounded-[1.7rem] border border-white/80 bg-white/90 p-4 shadow-xl shadow-violet-100/70 backdrop-blur">
         <div className="mb-3 flex items-center justify-between gap-3">
           <h2 className="text-lg font-black">정산 내역</h2>
           <button
@@ -333,7 +334,7 @@ function SettlementPage({
         ) : (
           <div className="space-y-3">
             {calculatedOrders.map((order) => (
-              <article key={order.id} className="rounded-[1.7rem] border border-slate-100 bg-gradient-to-br from-white to-slate-50 p-4 shadow-sm">
+              <article key={order.id} className="rounded-[1.7rem] border border-violet-100 bg-gradient-to-br from-white via-violet-50/60 to-cyan-50/70 p-4 shadow-md shadow-violet-100/60">
                 <div className="mb-3 flex items-center justify-between gap-2">
                   <input
                     type="date"
@@ -395,7 +396,7 @@ function SettlementPage({
 
 function ProductPage({ products, newProduct, setNewProduct, addProduct, updateProduct, deleteProduct }) {
   return (
-    <section className="rounded-[1.7rem] border border-white/70 bg-white/90 p-4 shadow-lg shadow-slate-200/70 backdrop-blur">
+    <section className="rounded-[1.7rem] border border-white/80 bg-white/90 p-4 shadow-xl shadow-violet-100/70 backdrop-blur">
       <h2 className="mb-3 text-lg font-black">용품관리</h2>
 
       <div className="mb-4 grid grid-cols-1 gap-2 sm:grid-cols-[1fr_0.7fr_0.7fr_auto]">
@@ -421,7 +422,7 @@ function ProductPage({ products, newProduct, setNewProduct, addProduct, updatePr
         />
         <button
           onClick={addProduct}
-          className="rounded-2xl bg-gradient-to-r from-violet-600 to-indigo-600 px-4 py-3 font-black text-white shadow-lg shadow-violet-200 transition hover:scale-[1.01] active:scale-95"
+          className="rounded-2xl bg-gradient-to-r from-fuchsia-600 via-violet-600 to-cyan-600 px-4 py-3 font-black text-white shadow-lg shadow-fuchsia-200 transition hover:scale-[1.01] active:scale-95"
         >
           추가
         </button>
@@ -429,7 +430,7 @@ function ProductPage({ products, newProduct, setNewProduct, addProduct, updatePr
 
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
         {products.map((product) => (
-          <article key={product.id} className="rounded-[1.7rem] border border-slate-100 bg-gradient-to-br from-white to-slate-50 p-4 shadow-sm">
+          <article key={product.id} className="rounded-[1.7rem] border border-violet-100 bg-gradient-to-br from-white via-violet-50/60 to-cyan-50/70 p-4 shadow-md shadow-violet-100/60">
             <div className="mb-3 flex items-center gap-2">
               <input
                 value={product.name}
@@ -472,7 +473,7 @@ function ProductPage({ products, newProduct, setNewProduct, addProduct, updatePr
 
 function SummaryCard({ title, value, highlight }) {
   return (
-    <div className={`rounded-[1.7rem] p-5 shadow-lg ${highlight ? "bg-gradient-to-br from-violet-600 to-indigo-700 text-white shadow-violet-200" : "border border-white/70 bg-white/90 shadow-slate-200/70"}`}>
+    <div className={`rounded-[1.7rem] p-5 shadow-xl ${highlight ? "bg-gradient-to-br from-fuchsia-600 via-violet-600 to-cyan-600 text-white shadow-fuchsia-200" : "border border-white/80 bg-white/90 shadow-violet-100/70"}`}>
       <p className={`text-xs font-bold ${highlight ? "text-violet-100" : "text-slate-500"}`}>{title}</p>
       <p className="mt-1 text-xl font-black">{value}</p>
     </div>
@@ -481,7 +482,7 @@ function SummaryCard({ title, value, highlight }) {
 
 function Info({ label, value, green }) {
   return (
-    <div className={`rounded-2xl p-3 ${green ? "bg-emerald-100 text-emerald-700" : "bg-white text-slate-800"}`}>
+    <div className={`rounded-2xl p-3 ${green ? "bg-gradient-to-br from-emerald-100 to-cyan-100 text-emerald-700" : "bg-white text-slate-800 shadow-sm"}`}>
       <p className="text-xs font-bold opacity-60">{label}</p>
       <p className="mt-1 font-black">{value}</p>
     </div>
@@ -493,7 +494,7 @@ function TabButton({ active, onClick, label }) {
     <button
       onClick={onClick}
       className={`rounded-2xl px-4 py-3 text-sm font-black transition ${
-        active ? "bg-gradient-to-r from-violet-600 to-indigo-600 text-white shadow-lg shadow-violet-200" : "bg-slate-100 text-slate-500 hover:bg-slate-200"
+        active ? "bg-gradient-to-r from-fuchsia-600 via-violet-600 to-cyan-600 text-white shadow-lg shadow-fuchsia-200" : "bg-slate-100 text-slate-500 hover:bg-violet-100 hover:text-violet-700"
       }`}
     >
       {label}
