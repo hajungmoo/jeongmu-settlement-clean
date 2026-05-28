@@ -1,25 +1,6 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { supabase } from "./supabase.js";
-function downloadBackup(orders, products) {
-  const backupData = {
-    orders,
-    products,
-    backupDate: new Date().toISOString(),
-  };
 
-  const blob = new Blob([JSON.stringify(backupData, null, 2)], {
-    type: "application/json",
-  });
-
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
-
-  a.href = url;
-  a.download = `pingpong-backup-${Date.now()}.json`;
-  a.click();
-
-  URL.revokeObjectURL(url);
-}
 const today = () => new Date().toISOString().slice(0, 10);
 const storageKey = "jeongmu-settlement-tabs-v2";
 const loginStorageKey = "jeongmu-settlement-login-ok";
@@ -206,110 +187,48 @@ export default function App() {
     setTab("settlement");
   }
 
-function parseBulkOrders() {
-  const ignoreWords = [
-    "택배비",
-    "총액",
-    "전잔액",
-    "입금",
-    "잔액",
-    "받았어요",
-    "발주",
-    "송금",
-  ];
+  function parseBulkOrders() {
+    const parsed = splitLines(bulkText)
+      .map((line) => {
+        const parts = line.replaceAll(",", " ").split(" ").filter(Boolean);
+        if (parts.length < 2) return null;
 
-  function getQtyFromLine(line) {
-    let total = 0;
+        const last = parts[parts.length - 1];
+        const qtyText = last
+          .replaceAll("장", "")
+          .replaceAll("개", "")
+          .replaceAll("켤레", "")
+          .replaceAll("벌", "")
+          .replaceAll("자루", "")
+          .replaceAll("박스", "")
+          .replaceAll("통", "")
+          .replaceAll("세트", "");
 
-    const colorPatterns = [
-      "적색",
-      "빨강",
-      "빨",
-      "적",
-      "레드",
-      "검정",
-      "검",
-      "흑",
-      "블랙",
-    ];
+        const qty = Number(qtyText);
+        const rawName = parts.slice(0, -1).join(" ");
+        if (!rawName || !qty) return null;
 
-    colorPatterns.forEach((word) => {
-      const regex = new RegExp(word + "\\s*(\\d+)", "g");
-      let match;
-      while ((match = regex.exec(line)) !== null) {
-        total += Number(match[1] || 0);
-      }
-    });
+        return {
+          id: Date.now() + Math.random(),
+          date: today(),
+          buyer: bulkBuyer.trim(),
+          productName: findBestProductName(rawName),
+          qty,
+          done: false,
+        };
+      })
+      .filter(Boolean);
 
-    const jangMatch = line.match(/(\d+)\s*장/);
-    if (jangMatch) {
-      total = Math.max(total, Number(jangMatch[1]));
+    if (parsed.length === 0) {
+      alert("인식된 정산이 없습니다. 예: 테너지05 2장");
+      return;
     }
 
-    const gaeMatch = line.match(/(\d+)\s*개/);
-    if (gaeMatch) {
-      total = Math.max(total, Number(gaeMatch[1]));
-    }
-
-    return total || 1;
+    setOrders((prev) => [...parsed, ...prev]);
+    setBulkBuyer("");
+    setBulkText("");
+    setTab("settlement");
   }
-
-  const parsed = splitLines(bulkText)
-    .map((line) => {
-      const clean = line.trim();
-      if (!clean) return null;
-
-      if (ignoreWords.some((word) => clean.includes(word))) return null;
-
-      const matchedProduct = products.find((product) =>
-        normalizeName(clean).includes(normalizeName(product.name))
-      );
-
-      if (!matchedProduct) return null;
-
-      return {
-        id: Date.now() + Math.random(),
-        date: today(),
-        buyer: bulkBuyer.trim() || "카톡주문",
-        productName: matchedProduct.name,
-        qty: getQtyFromLine(clean),
-        done: false,
-      };
-    })
-    .filter(Boolean);
-
-  if (parsed.length === 0) {
-    alert("인식된 정산이 없습니다. 예: 테너지05 적1 검1");
-    return;
-  }
-
-  setOrders((prev) => {
-  const next = [...prev];
-
-  parsed.forEach((item) => {
-    const index = next.findIndex(
-      (order) =>
-        order.productName === item.productName &&
-        order.buyer === item.buyer &&
-        order.done === false
-    );
-
-    if (index >= 0) {
-      next[index] = {
-        ...next[index],
-        qty: Number(next[index].qty || 0) + Number(item.qty || 0),
-      };
-    } else {
-      next.unshift(item);
-    }
-  });
-
-  return next;
-});
-  setBulkBuyer("");
-  setBulkText("");
-  setTab("settlement");
-}
 
   function updateOrder(id, key, value) {
     setOrders((prev) =>
@@ -397,15 +316,15 @@ function parseBulkOrders() {
 
   if (!isUnlocked) {
     return (
-      <main className="flex min-h-screen items-center justify-center bg-[radial-gradient(circle_at_top_left,_#ede9fe,_transparent_35%),radial-gradient(circle_at_top_right,_#dbeafe,_transparent_35%),linear-gradient(135deg,_#faf5ff,_#f0f9ff,_#ecfdf5)] p-4 text-slate-900">
+      <main className="flex min-h-screen items-center justify-center bg-[radial-gradient(circle_at_top_left,_#7c3aed55,_transparent_32%),radial-gradient(circle_at_top_right,_#06b6d455,_transparent_30%),radial-gradient(circle_at_bottom,_#ec489955,_transparent_35%),linear-gradient(135deg,_#020617,_#111827,_#1e1b4b)] p-4 text-slate-100">
         <form
           onSubmit={handleLogin}
-          className="w-full max-w-sm rounded-[2rem] border border-white/80 bg-white/90 p-6 shadow-2xl shadow-violet-200/70 backdrop-blur"
+          className="w-full max-w-sm rounded-[2rem] border border-cyan-300/20 bg-slate-950/70 p-6 shadow-2xl shadow-cyan-500/20 backdrop-blur"
         >
           <div className="mb-5 text-center">
-            <p className="text-sm font-bold text-violet-600">Pingpong Dreamers</p>
-            <h1 className="mt-1 text-2xl font-black text-slate-900">핑퐁드림어스 정산파일</h1>
-            <p className="mt-2 text-sm text-slate-500">비밀번호를 입력하면 정산앱에 들어갈 수 있습니다.</p>
+            <p className="text-sm font-bold text-cyan-300">Pingpong Dreamers</p>
+            <h1 className="mt-1 text-2xl font-black text-white">핑퐁드림어스 정산파일</h1>
+            <p className="mt-2 text-sm text-slate-400">비밀번호를 입력하면 정산앱에 들어갈 수 있습니다.</p>
           </div>
 
           <input
@@ -413,44 +332,44 @@ function parseBulkOrders() {
             value={passwordInput}
             onChange={(e) => setPasswordInput(e.target.value)}
             placeholder="비밀번호"
-            className="w-full rounded-2xl border border-violet-100 bg-white px-4 py-4 text-center text-lg font-bold outline-none transition focus:border-fuchsia-400 focus:ring-2 focus:ring-fuchsia-100"
+            className="w-full rounded-2xl border border-cyan-300/20 bg-slate-900/80 px-4 py-4 text-center text-lg font-bold text-white outline-none transition placeholder:text-slate-500 focus:border-cyan-400 focus:ring-2 focus:ring-cyan-400/20"
           />
 
           {loginError && <p className="mt-3 text-center text-sm font-bold text-rose-500">{loginError}</p>}
 
           <button
             type="submit"
-            className="mt-4 w-full rounded-2xl bg-gradient-to-r from-fuchsia-600 via-violet-600 to-cyan-600 px-4 py-4 font-black text-white shadow-lg shadow-fuchsia-200 transition active:scale-95"
+            className="mt-4 w-full rounded-2xl bg-gradient-to-r from-cyan-500 via-violet-600 to-fuchsia-600 px-4 py-4 font-black text-white shadow-lg shadow-cyan-500/20 transition active:scale-95"
           >
             로그인
           </button>
 
-          <p className="mt-4 text-center text-xs text-slate-400">기본 비밀번호: 비밀 </p>
+          <p className="mt-4 text-center text-xs text-slate-500">비밀번호를 입력해주세요.</p>
         </form>
       </main>
     );
   }
 
   return (
-    <main className="min-h-screen bg-[radial-gradient(circle_at_top_left,_#ede9fe,_transparent_35%),radial-gradient(circle_at_top_right,_#dbeafe,_transparent_35%),linear-gradient(135deg,_#faf5ff,_#f0f9ff,_#ecfdf5)] pb-28 text-slate-900">
+    <main className="min-h-screen bg-[radial-gradient(circle_at_top_left,_#7c3aed55,_transparent_32%),radial-gradient(circle_at_top_right,_#06b6d455,_transparent_30%),radial-gradient(circle_at_bottom,_#ec489955,_transparent_35%),linear-gradient(135deg,_#020617,_#111827,_#1e1b4b)] pb-28 text-slate-100">
       <div className="mx-auto max-w-5xl space-y-5 p-4">
-        <header className="relative overflow-hidden rounded-[2rem] bg-gradient-to-br from-fuchsia-600 via-violet-700 to-cyan-700 p-6 text-white shadow-2xl shadow-violet-300/60">
-          <div className="absolute -right-12 -top-12 h-40 w-40 rounded-full bg-yellow-300/25 blur-2xl" />
-          <div className="absolute -bottom-16 -left-16 h-48 w-48 rounded-full bg-pink-300/30 blur-3xl" />
-          <div className="absolute left-1/2 top-1/2 h-32 w-32 -translate-x-1/2 -translate-y-1/2 rounded-full bg-cyan-300/20 blur-2xl" />
+        <header className="relative overflow-hidden rounded-[2rem] border border-cyan-300/20 bg-gradient-to-br from-slate-950 via-violet-950 to-cyan-950 p-6 text-white shadow-2xl shadow-cyan-500/20">
+          <div className="absolute -right-16 -top-16 h-48 w-48 rounded-full bg-cyan-400/25 blur-3xl" />
+          <div className="absolute -bottom-20 -left-20 h-56 w-56 rounded-full bg-fuchsia-500/25 blur-3xl" />
+          <div className="absolute left-1/2 top-1/2 h-40 w-40 -translate-x-1/2 -translate-y-1/2 rounded-full bg-violet-400/20 blur-3xl" />
 
           <div className="relative z-10">
             <div className="mb-4 flex items-center justify-between gap-3">
-              <span className="rounded-full bg-white/20 px-3 py-1 text-xs font-bold text-white shadow-sm backdrop-blur">
+              <span className="rounded-full border border-cyan-300/30 bg-cyan-300/10 px-3 py-1 text-xs font-bold text-cyan-100 shadow-sm backdrop-blur">
                 {koreanDate(today())}
               </span>
               <div className="flex gap-2">
-                <span className="rounded-full bg-emerald-300/25 px-3 py-1 text-xs font-bold text-emerald-50 shadow-sm">
+                <span className="rounded-full border border-emerald-300/30 bg-emerald-300/10 px-3 py-1 text-xs font-bold text-emerald-100 shadow-sm">
                   {savedText}
                 </span>
                 <button
                   onClick={handleLogout}
-                  className="rounded-full bg-white/15 px-3 py-1 text-xs font-bold text-white shadow-sm backdrop-blur transition hover:bg-white/25"
+                  className="rounded-full border border-white/15 bg-white/10 px-3 py-1 text-xs font-bold text-white shadow-sm backdrop-blur transition hover:bg-white/20"
                 >
                   로그아웃
                 </button>
@@ -459,16 +378,16 @@ function parseBulkOrders() {
 
             <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
               <div>
-                <p className="inline-flex rounded-full bg-white/15 px-3 py-1 text-sm font-bold text-yellow-100 backdrop-blur">Pingpong Dreamers</p>
-                <h1 className="mt-3 text-3xl font-black tracking-tight drop-shadow-sm sm:text-4xl">
+                <p className="inline-flex rounded-full border border-cyan-300/30 bg-cyan-300/10 px-3 py-1 text-sm font-bold text-cyan-100 backdrop-blur">Pingpong Dreamers</p>
+                <h1 className="mt-3 bg-gradient-to-r from-white via-cyan-100 to-fuchsia-200 bg-clip-text text-3xl font-black tracking-tight text-transparent drop-shadow-sm sm:text-4xl">
                   핑퐁드림어스 정산파일
                 </h1>
-                <p className="mt-2 text-sm font-medium text-cyan-50">용품 주문 · 정산 · 가격 관리를 한 번에</p>
+                <p className="mt-2 text-sm font-medium text-slate-300">용품 주문 · 정산 · 가격 관리를 한 번에</p>
               </div>
 
               <button
                 onClick={() => addOrder()}
-                className="rounded-2xl bg-gradient-to-r from-yellow-200 to-white px-5 py-3 font-black text-violet-800 shadow-xl shadow-black/20 transition hover:scale-[1.02] active:scale-95"
+                className="rounded-2xl border border-cyan-300/40 bg-gradient-to-r from-cyan-400 via-violet-500 to-fuchsia-500 px-5 py-3 font-black text-white shadow-xl shadow-cyan-500/20 transition hover:scale-[1.02] active:scale-95"
               >
                 + 정산 추가
               </button>
@@ -503,7 +422,7 @@ function parseBulkOrders() {
         )}
       </div>
 
-      <nav className="fixed bottom-0 left-0 right-0 border-t border-white/60 bg-white/85 p-3 shadow-2xl backdrop-blur-xl">
+      <nav className="fixed bottom-0 left-0 right-0 border-t border-cyan-300/20 bg-slate-950/80 p-3 shadow-2xl backdrop-blur-xl">
         <div className="mx-auto grid max-w-md grid-cols-2 gap-2">
           <TabButton active={tab === "settlement"} onClick={() => setTab("settlement")} label="정산" />
           <TabButton active={tab === "products"} onClick={() => setTab("products")} label="용품관리" />
@@ -556,12 +475,6 @@ function SettlementPage({
           >
             엑셀 다운로드
           </button>
-        <button
-  onClick={() => downloadBackup(calculatedOrders, products)}
-  className="rounded-2xl bg-purple-600 px-4 py-3 text-sm font-bold text-white shadow-lg hover:scale-105 transition"
->
-  전체 백업
-</button>
         </div>
       </section>
 
