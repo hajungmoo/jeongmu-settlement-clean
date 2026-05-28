@@ -337,36 +337,64 @@ export default function App() {
   }
 
 if (!isUnlocked) {
- return (
-  <main className="min-h-screen bg-[#0b1120] pb-28 text-slate-100">
+  return (
+    <main className="relative flex min-h-screen items-center justify-center overflow-hidden bg-[#050505] p-4 text-slate-100">
+      {/* 황금 용 실루엣 배경 */}
+      <div className="pointer-events-none absolute inset-0">
+        <div className="absolute left-1/2 top-1/2 h-[720px] w-[720px] -translate-x-1/2 -translate-y-1/2 rounded-full border border-yellow-500/20 shadow-[0_0_120px_rgba(245,158,11,0.25)]" />
+        <div className="absolute left-1/2 top-[46%] h-[420px] w-[900px] -translate-x-1/2 -translate-y-1/2 rounded-full border-[18px] border-yellow-500/10 blur-[1px] rotate-[-18deg]" />
+        <div className="absolute left-[18%] top-[18%] h-72 w-72 rounded-full bg-yellow-500/10 blur-3xl" />
+        <div className="absolute right-[12%] bottom-[12%] h-96 w-96 rounded-full bg-amber-600/10 blur-3xl" />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_transparent_0%,_rgba(0,0,0,0.25)_42%,_rgba(0,0,0,0.9)_100%)]" />
+      </div>
+
+      {/* 로그인 카드 */}
       <form
         onSubmit={handleLogin}
-        className="w-full max-w-sm rounded-[2rem] border border-slate-700 bg-[#111827] p-6 shadow-xl shadow-black/30"
+        className="relative z-10 w-full max-w-md rounded-[2rem] border border-yellow-500/35 bg-black/70 p-8 text-center shadow-[0_0_60px_rgba(245,158,11,0.25)] backdrop-blur-xl"
       >
-        <div className="mb-5 text-center">
-          <p className="text-sm font-bold text-violet-300">Pingpong Dreamers</p>
-          <h1 className="mt-1 text-2xl font-black text-slate-100">핑퐁드림어스 정산파일</h1>
-          <p className="mt-2 text-sm text-slate-400">비밀번호를 입력하면 정산앱에 들어갈 수 있습니다.</p>
+        <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-br from-yellow-300 to-amber-600 text-3xl shadow-lg shadow-yellow-500/20">
+          🏓
         </div>
+
+        <h1 className="text-4xl font-black tracking-tight text-transparent bg-clip-text bg-gradient-to-b from-yellow-200 via-amber-300 to-yellow-600">
+          핑퐁드림어스
+        </h1>
+
+        <p className="mt-2 text-2xl font-bold text-amber-200">
+          주문 시스템
+        </p>
+
+        <div className="my-6 flex items-center gap-3">
+          <div className="h-px flex-1 bg-yellow-500/25" />
+          <span className="text-yellow-500/70">◆</span>
+          <div className="h-px flex-1 bg-yellow-500/25" />
+        </div>
+
+        <p className="mb-4 text-sm text-slate-300">
+          비밀번호를 입력해주세요
+        </p>
 
         <input
           type="password"
           value={passwordInput}
           onChange={(e) => setPasswordInput(e.target.value)}
           placeholder="비밀번호"
-          className="w-full rounded-2xl border border-slate-700 bg-[#1a2336] px-4 py-4 text-center text-lg font-bold text-slate-100 outline-none placeholder:text-slate-500 focus:border-violet-400"
+          className="w-full rounded-2xl border border-yellow-500/30 bg-[#070707]/90 px-4 py-4 text-center text-lg font-bold text-yellow-100 outline-none placeholder:text-slate-500 focus:border-yellow-400 focus:ring-2 focus:ring-yellow-500/20"
         />
 
-        {loginError && <p className="mt-3 text-center text-sm font-bold text-rose-400">{loginError}</p>}
+        {loginError && (
+          <p className="mt-3 text-center text-sm font-bold text-rose-400">
+            {loginError}
+          </p>
+        )}
 
         <button
           type="submit"
-          className="mt-4 w-full rounded-2xl bg-gradient-to-r from-violet-600 to-indigo-600 px-4 py-4 font-black text-white shadow-lg shadow-black/20 active:scale-95"
+          className="mt-5 w-full rounded-2xl bg-gradient-to-r from-yellow-300 via-amber-400 to-yellow-600 px-4 py-4 font-black text-black shadow-lg shadow-yellow-500/20 transition active:scale-95"
         >
           로그인
         </button>
-
-        <p className="mt-4 text-center text-xs text-slate-500">비밀번호를 입력해주세요.</p>
       </form>
     </main>
   );
