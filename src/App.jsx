@@ -487,13 +487,11 @@ function SettlementPage({
             placeholder="주문자명, 비워도 됨"
             className="w-full rounded-2xl border border-violet-100 bg-white px-3 py-3 outline-none transition focus:border-fuchsia-400 focus:ring-2 focus:ring-fuchsia-100"
           />
-          <textarea
-            value={bulkText}
-            onChange={(e) => setBulkText(e.target.value)}
-            placeholder={placeholderText}
-            rows={5}
-            className="w-full resize-none rounded-2xl border border-violet-100 bg-white px-3 py-3 outline-none transition focus:border-fuchsia-400 focus:ring-2 focus:ring-fuchsia-100"
-          />
+         <textarea
+  value={bulkText}
+  onChange={(e) => setBulkText(e.target.value)}
+  className="w-full rounded-2xl border border-slate-700 bg-white px-4 py-3 text-slate-900 outline-none"
+/>
           <button
             onClick={parseBulkOrders}
             className="w-full rounded-2xl bg-gradient-to-r from-violet-600 to-indigo-600 px-4 py-3 font-black text-slate-900 shadow-lg shadow-fuchsia-200 transition hover:scale-[1.01] active:scale-95"
