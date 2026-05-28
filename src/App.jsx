@@ -314,13 +314,13 @@ export default function App() {
     setPasswordInput("");
   }
 
-  if (!isUnlocked) {
-    return (
-      <main className="flex min-h-screen items-center justify-center bg-[radial-gradient(circle_at_top_left,_#7c3aed55,_transparent_32%),radial-gradient(circle_at_top_right,_#06b6d455,_transparent_30%),radial-gradient(circle_at_bottom,_#ec489955,_transparent_35%),linear-gradient(135deg,_#020617,_#111827,_#1e1b4b)] p-4 text-slate-100">
-        <form
-          onSubmit={handleLogin}
-          className="w-full max-w-sm rounded-[2rem] border border-cyan-300/20 bg-slate-950/70 p-6 shadow-2xl shadow-cyan-500/20 backdrop-blur"
-        >
+ if (!isUnlocked) {
+  return (
+    <main className="flex min-h-screen items-center justify-center bg-[#0f172a] p-4 text-slate-100">
+      <form
+        onSubmit={handleLogin}
+        className="w-full max-w-sm rounded-[2rem] border border-slate-700 bg-[#111827] p-6 shadow-xl shadow-black/30 backdrop-blur"
+      >
           <div className="mb-5 text-center">
             <p className="text-sm font-bold text-cyan-300">Pingpong Dreamers</p>
             <h1 className="mt-1 text-2xl font-black text-white">핑퐁드림어스 정산파일</h1>
