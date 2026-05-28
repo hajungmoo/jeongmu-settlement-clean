@@ -1,4 +1,4 @@
-```jsx
+
 import React, { useEffect, useMemo, useState } from "react";
 import { supabase } from "./supabase.js";
 
@@ -250,4 +250,3 @@ export default function App() {
     </div>
   );
 }
-```
