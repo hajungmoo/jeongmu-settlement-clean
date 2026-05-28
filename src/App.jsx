@@ -363,52 +363,62 @@ if (!isUnlocked) {
       {/* 로그인 카드 */}
 <form
   onSubmit={handleLogin}
-  className="relative z-10 w-full max-w-md rounded-[1.3rem] border border-yellow-500/35 bg-black/80 p-9 text-center shadow-[0_0_90px_rgba(245,158,11,0.28)] backdrop-blur-xl"
+  className="relative z-10 w-full max-w-md rounded-[1.3rem] border border-[#d4a017]/50 bg-[#050505]/92 p-9 text-center shadow-[0_0_90px_rgba(212,160,23,0.28)] backdrop-blur-xl"
 >
+
+  {/* 상단 */}
   <div className="mb-7">
+
     <p className="text-xs font-bold tracking-[0.45em] text-yellow-500/70">
       PINGPONG DREAMERS
     </p>
 
-    <h1 className="mt-4 bg-gradient-to-b from-yellow-100 via-amber-300 to-yellow-700 bg-clip-text text-4xl font-black tracking-wide text-transparent">
+    <h1 className="mt-4 bg-gradient-to-b from-[#fff3b0] via-[#f6d365] to-[#b8860b] bg-clip-text text-5xl font-black tracking-wide text-transparent">
       핑퐁드림어스
     </h1>
 
     <p className="mt-3 text-xl font-bold tracking-[0.25em] text-amber-200">
       주문 시스템
     </p>
+
   </div>
 
-  <div className="my-6 flex items-center gap-3">
-    <div className="h-px flex-1 bg-yellow-500/25" />
+  {/* 라인 */}
+  <div className="my-7 flex items-center gap-3">
+    <div className="h-px flex-1 bg-yellow-500/20" />
     <span className="text-yellow-500/60">◆</span>
-    <div className="h-px flex-1 bg-yellow-500/25" />
+    <div className="h-px flex-1 bg-yellow-500/20" />
   </div>
 
+  {/* 설명 */}
   <p className="mb-4 text-sm text-slate-300">
     비밀번호를 입력해주세요
   </p>
 
+  {/* 입력창 */}
   <input
     type="password"
     value={passwordInput}
     onChange={(e) => setPasswordInput(e.target.value)}
     placeholder="PASSWORD"
-    className="w-full rounded-xl border border-yellow-500/35 bg-black/70 px-5 py-4 text-center text-lg font-bold tracking-[0.2em] text-yellow-100 outline-none placeholder:text-slate-600 focus:border-yellow-300 focus:ring-2 focus:ring-yellow-500/20"
+    className="w-full rounded-xl border border-[#d4a017]/40 bg-[#111111] px-5 py-4 text-center text-lg font-bold tracking-[0.2em] text-yellow-100 outline-none placeholder:text-slate-600 focus:border-yellow-300 focus:ring-2 focus:ring-yellow-500/20"
   />
 
+  {/* 에러 */}
   {loginError && (
     <p className="mt-3 text-center text-sm font-bold text-rose-400">
       {loginError}
     </p>
   )}
 
+  {/* 버튼 */}
   <button
     type="submit"
-    className="mt-6 w-full rounded-xl bg-gradient-to-r from-[#f6d365] via-[#d4a017] to-[#b8860b] px-5 py-4 text-lg font-black tracking-wide text-black shadow-lg shadow-yellow-500/20 transition hover:scale-[1.01] active:scale-95"
+    className="mt-6 w-full rounded-xl bg-gradient-to-r from-[#ffe27a] via-[#d4a017] to-[#8b6508] px-5 py-4 text-lg font-black tracking-wide text-[#111111] shadow-[0_0_40px_rgba(212,160,23,0.45)] transition hover:scale-[1.01] active:scale-95"
   >
     로그인
   </button>
+
 </form>
     </main>
   );
