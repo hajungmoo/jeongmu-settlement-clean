@@ -1,846 +1,541 @@
-import React, { useEffect, useMemo, useState } from "react";
-import { supabase } from "./supabase.js";
+import { useEffect, useMemo, useState } from "react";
+import { createClient } from "@supabase/supabase-js";
+import "./App.css";
 
-const today = () => new Date().toISOString().slice(0, 10);
-const storageKey = "jeongmu-settlement-tabs-v2";
-const loginStorageKey = "jeongmu-settlement-login-ok";
-const appPassword = "12345";
-const cloudRowId = "main";
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+const supabase = createClient(supabaseUrl, supabaseAnonKey);
+
+const CLOUD_ID = "main";
+const PASSWORD = "12345";
 
 const defaultProducts = [
-  { id: 1, name: "테너지05", buyPrice: 63000, sellPrice: 0 },
-  { id: 2, name: "MXP", buyPrice: 40000, sellPrice: 0 },
-  { id: 3, name: "로제나", buyPrice: 28000, sellPrice: 0 },
+  { name: "테너지05", price: 79000 },
+  { name: "테너지64", price: 79000 },
+  { name: "디그닉스05", price: 89000 },
+  { name: "디그닉스09C", price: 89000 },
+  { name: "MXP", price: 52000 },
+  { name: "MXK", price: 52000 },
+  { name: "로제나", price: 45000 },
+  { name: "오메가", price: 52000 },
+  { name: "넥시시합구6구", price: 9000 },
+  { name: "이너포스 ALC FL", price: 185000 },
+  { name: "탁구화", price: 0 },
 ];
 
-function won(value) {
-  return Number(value || 0).toLocaleString("ko-KR") + "원";
-}
+const ignoreWords = [
+  "택배비",
+  "총액",
+  "전잔액",
+  "입금",
+  "잔액",
+  "받았어요",
+  "발주",
+  "송금",
+  "완료",
+];
 
-function koreanDate(value) {
-  const d = value ? new Date(value) : new Date();
-  return `${d.getFullYear()}년 ${d.getMonth() + 1}월 ${d.getDate()}일`;
-}
-
-function normalizeName(text) {
-  return String(text || "").toLowerCase().replaceAll(" ", "").replaceAll("-", "");
-}
-
-function splitLines(text) {
-  return String(text || "")
-    .split(String.fromCharCode(10))
-    .map((line) => line.trim())
-    .filter(Boolean);
-}
-
-export default function App() {
-  const [isUnlocked, setIsUnlocked] = useState(() => localStorage.getItem(loginStorageKey) === "yes");
-  const [passwordInput, setPasswordInput] = useState("");
-  const [loginError, setLoginError] = useState("");
-  const [tab, setTab] = useState("settlement");
+function App() {
+  const [loggedIn, setLoggedIn] = useState(localStorage.getItem("loggedIn") === "yes");
+  const [password, setPassword] = useState("");
+  const [activeTab, setActiveTab] = useState("orders");
   const [orders, setOrders] = useState([]);
   const [products, setProducts] = useState(defaultProducts);
-  const [savedText, setSavedText] = useState("저장 준비");
-  const [newProduct, setNewProduct] = useState({ name: "", buyPrice: "", sellPrice: "" });
-  const [bulkBuyer, setBulkBuyer] = useState("");
+  const [customer, setCustomer] = useState("");
+  const [item, setItem] = useState("");
+  const [color, setColor] = useState("");
+  const [qty, setQty] = useState(1);
+  const [memo, setMemo] = useState("");
   const [bulkText, setBulkText] = useState("");
+  const [saving, setSaving] = useState(false);
 
   useEffect(() => {
-    async function loadCloudData() {
-      try {
-        setSavedText("불러오는 중");
-
-        const { data, error } = await supabase
-          .from("app_data")
-          .select("data")
-          .eq("id", cloudRowId)
-          .single();
-
-        if (error) throw error;
-
-        if (data?.data) {
-          if (Array.isArray(data.data.orders)) setOrders(data.data.orders);
-          if (Array.isArray(data.data.products) && data.data.products.length > 0) {
-            setProducts(data.data.products);
-          }
-        }
-
-        setSavedText("클라우드 연결됨");
-      } catch (error) {
-        console.error("클라우드 불러오기 실패", error);
-        setSavedText("클라우드 실패 · 기기 저장");
-
-        try {
-          const saved = localStorage.getItem(storageKey);
-          if (saved) {
-            const localData = JSON.parse(saved);
-            if (Array.isArray(localData.orders)) setOrders(localData.orders);
-            if (Array.isArray(localData.products)) setProducts(localData.products);
-          }
-        } catch (localError) {
-          console.error("기기 저장 불러오기 실패", localError);
-        }
-      }
-    }
-
-    loadCloudData();
-  }, []);
-
-  useEffect(() => {
+    loadCloud();
     const channel = supabase
-      .channel("app-data-live")
+      .channel("app_data_realtime")
       .on(
         "postgres_changes",
-        {
-          event: "UPDATE",
-          schema: "public",
-          table: "app_data",
-          filter: `id=eq.${cloudRowId}`,
-        },
-        (payload) => {
-          const cloudData = payload.new?.data;
-          if (!cloudData) return;
-
-          if (Array.isArray(cloudData.orders)) setOrders(cloudData.orders);
-          if (Array.isArray(cloudData.products) && cloudData.products.length > 0) {
-            setProducts(cloudData.products);
-          }
-
-          setSavedText("실시간 반영됨");
-          setTimeout(() => setSavedText("자동 저장"), 1000);
-        }
+        { event: "*", schema: "public", table: "app_data" },
+        () => loadCloud()
       )
-      .subscribe((status) => {
-        if (status === "SUBSCRIBED") {
-          setSavedText("실시간 연결됨");
-        }
-      });
+      .subscribe();
 
-    return () => {
-      supabase.removeChannel(channel);
-    };
+    return () => supabase.removeChannel(channel);
   }, []);
 
-  useEffect(() => {
-    const timer = setTimeout(async () => {
-      try {
-        const payload = { orders, products };
-        localStorage.setItem(storageKey, JSON.stringify(payload));
+  async function loadCloud() {
+    const { data } = await supabase
+      .from("app_data")
+      .select("*")
+      .eq("id", CLOUD_ID)
+      .single();
 
-        const { error } = await supabase
-          .from("app_data")
-          .upsert({ id: cloudRowId, data: payload, updated_at: new Date().toISOString() });
+    if (data?.data) {
+      setOrders(data.data.orders || []);
+      setProducts(data.data.products || defaultProducts);
+    }
+  }
 
-        if (error) throw error;
-
-        setSavedText("클라우드 저장됨");
-        setTimeout(() => setSavedText("자동 저장"), 1000);
-      } catch (error) {
-        console.error("클라우드 저장 실패", error);
-        setSavedText("기기 저장됨 · 클라우드 실패");
-      }
-    }, 700);
-
-    return () => clearTimeout(timer);
-  }, [orders, products]);
-
-  const productMap = useMemo(() => {
-    return Object.fromEntries(products.map((product) => [product.name, product]));
-  }, [products]);
-
-  const calculatedOrders = useMemo(() => {
-    return orders.map((order) => {
-      const product = productMap[order.productName] || {};
-      const qty = Number(order.qty || 0);
-      const buyPrice = Number(product.buyPrice || 0);
-      const sellPrice = Number(product.sellPrice || 0);
-      const totalBuy = buyPrice * qty;
-      const totalSell = sellPrice * qty;
-      return { ...order, buyPrice, sellPrice, totalBuy, totalSell, profit: totalSell - totalBuy };
-    });
-  }, [orders, productMap]);
-
-  const totals = useMemo(() => {
-    return calculatedOrders.reduce(
-      (acc, order) => {
-        acc.totalBuy += order.totalBuy;
-        acc.totalSell += order.totalSell;
-        acc.profit += order.profit;
-        return acc;
+  async function saveCloud(nextOrders = orders, nextProducts = products) {
+    setSaving(true);
+    await supabase.from("app_data").upsert({
+      id: CLOUD_ID,
+      data: {
+        orders: nextOrders,
+        products: nextProducts,
+        updatedAt: new Date().toISOString(),
       },
-      { totalBuy: 0, totalSell: 0, profit: 0 }
+    });
+    setSaving(false);
+  }
+
+  function login(e) {
+    e.preventDefault();
+    if (password === PASSWORD) {
+      localStorage.setItem("loggedIn", "yes");
+      setLoggedIn(true);
+    } else {
+      alert("비밀번호가 틀렸습니다.");
+    }
+  }
+
+  function getPrice(name) {
+    return products.find((p) => p.name === name)?.price || 0;
+  }
+
+  function addOrder(order) {
+    const next = [...orders];
+    const found = next.find(
+      (o) =>
+        o.customer === order.customer &&
+        o.item === order.item &&
+        o.color === order.color &&
+        !o.done
     );
-  }, [calculatedOrders]);
 
-  function findBestProductName(rawName) {
-    const target = normalizeName(rawName);
-    const exact = products.find((product) => normalizeName(product.name) === target);
-    if (exact) return exact.name;
-    return rawName.trim();
+    if (found) {
+      found.qty = Number(found.qty) + Number(order.qty);
+    } else {
+      next.unshift({
+        id: Date.now() + Math.random(),
+        done: false,
+        createdAt: new Date().toLocaleString(),
+        ...order,
+      });
+    }
+
+    setOrders(next);
+    saveCloud(next, products);
   }
 
-  function addOrder(productName = products[0]?.name || "") {
-    setOrders((prev) => [
-      { id: Date.now(), date: today(), buyer: "", productName, qty: 1, done: false },
-      ...prev,
-    ]);
-    setTab("settlement");
+  function addManualOrder() {
+    if (!customer || !item) return alert("주문자와 용품명을 입력하세요.");
+
+    addOrder({
+      customer,
+      item,
+      color,
+      qty: Number(qty),
+      price: getPrice(item),
+      memo,
+    });
+
+    setItem("");
+    setColor("");
+    setQty(1);
+    setMemo("");
   }
 
-  function parseBulkOrders() {
-    const parsed = splitLines(bulkText)
-      .map((line) => {
-        const parts = line.replaceAll(",", " ").split(" ").filter(Boolean);
-        if (parts.length < 2) return null;
+  function parseBulk() {
+    if (!customer) return alert("주문자를 먼저 입력하세요.");
 
-        const last = parts[parts.length - 1];
-        const qtyText = last
-          .replaceAll("장", "")
-          .replaceAll("개", "")
-          .replaceAll("켤레", "")
-          .replaceAll("벌", "")
-          .replaceAll("자루", "")
-          .replaceAll("박스", "")
-          .replaceAll("통", "")
-          .replaceAll("세트", "");
-
-        const qty = Number(qtyText);
-        const rawName = parts.slice(0, -1).join(" ");
-        if (!rawName || !qty) return null;
-
-        return {
-          id: Date.now() + Math.random(),
-          date: today(),
-          buyer: bulkBuyer.trim(),
-          productName: findBestProductName(rawName),
-          qty,
-          done: false,
-        };
-      })
+    const lines = bulkText
+      .split("\n")
+      .map((v) => v.trim())
       .filter(Boolean);
 
-    if (parsed.length === 0) {
-      alert("인식된 정산이 없습니다. 예: 테너지05 2장");
-      return;
-    }
+    let count = 0;
 
-    setOrders((prev) => {
-  const next = [...prev];
+    lines.forEach((line) => {
+      if (ignoreWords.some((w) => line.includes(w))) return;
 
-  parsed.forEach((item) => {
-    const index = next.findIndex(
-      (order) =>
-        order.productName === item.productName &&
-        order.buyer === item.buyer &&
-        order.done === false
-    );
+      const product = products.find((p) =>
+        line.replaceAll(" ", "").includes(p.name.replaceAll(" ", ""))
+      );
 
-    if (index >= 0) {
-      next[index] = {
-        ...next[index],
-        qty: Number(next[index].qty || 0) + Number(item.qty || 0),
-      };
-    } else {
-      next.unshift(item);
-    }
-  });
+      if (!product) return;
 
-  return next;
-});
-    setBulkBuyer("");
+      const redMatch = line.match(/(적|빨강|레드)\s*(\d+)/);
+      const blackMatch = line.match(/(검|검정|블랙)\s*(\d+)/);
+      const normalMatch = line.match(/(\d+)\s*(장|개|족)?/);
+
+      if (redMatch) {
+        addOrder({
+          customer,
+          item: product.name,
+          color: "적",
+          qty: Number(redMatch[2]),
+          price: product.price,
+          memo: "카톡 자동입력",
+        });
+        count++;
+      }
+
+      if (blackMatch) {
+        addOrder({
+          customer,
+          item: product.name,
+          color: "검",
+          qty: Number(blackMatch[2]),
+          price: product.price,
+          memo: "카톡 자동입력",
+        });
+        count++;
+      }
+
+      if (!redMatch && !blackMatch && normalMatch) {
+        addOrder({
+          customer,
+          item: product.name,
+          color: "",
+          qty: Number(normalMatch[1]),
+          price: product.price,
+          memo: "카톡 자동입력",
+        });
+        count++;
+      }
+    });
+
     setBulkText("");
-    setTab("settlement");
+    alert(`${count}건 자동 추가 완료`);
   }
 
-  function updateOrder(id, key, value) {
-    setOrders((prev) =>
-      prev.map((order) =>
-        order.id === id ? { ...order, [key]: key === "qty" ? Number(value || 0) : value } : order
-      )
-    );
+  function toggleDone(id) {
+    const next = orders.map((o) => (o.id === id ? { ...o, done: !o.done } : o));
+    setOrders(next);
+    saveCloud(next, products);
   }
 
-  function deleteOrder(id) {
-    setOrders((prev) => prev.filter((order) => order.id !== id));
+  function removeOrder(id) {
+    if (!confirm("삭제할까요?")) return;
+    const next = orders.filter((o) => o.id !== id);
+    setOrders(next);
+    saveCloud(next, products);
   }
 
   function addProduct() {
-    if (!newProduct.name.trim()) return;
-    setProducts((prev) => [
-      ...prev,
-      {
-        id: Date.now(),
-        name: newProduct.name.trim(),
-        buyPrice: Number(newProduct.buyPrice || 0),
-        sellPrice: Number(newProduct.sellPrice || 0),
-      },
-    ]);
-    setNewProduct({ name: "", buyPrice: "", sellPrice: "" });
+    const name = prompt("용품명");
+    if (!name) return;
+    const price = Number(prompt("가격") || 0);
+    const next = [...products, { name, price }];
+    setProducts(next);
+    saveCloud(orders, next);
   }
 
-  function updateProduct(id, key, value) {
-    setProducts((prev) =>
-      prev.map((product) =>
-        product.id === id ? { ...product, [key]: key === "name" ? value : Number(value || 0) } : product
-      )
+  function removeProduct(name) {
+    const next = products.filter((p) => p.name !== name);
+    setProducts(next);
+    saveCloud(orders, next);
+  }
+
+  function downloadBackup() {
+    const blob = new Blob([JSON.stringify({ orders, products }, null, 2)], {
+      type: "application/json",
+    });
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = "핑퐁드림어스_전체백업.json";
+    a.click();
+  }
+
+  function downloadCSV() {
+    const rows = [
+      ["주문자", "용품", "색상", "수량", "단가", "합계", "상태", "메모", "날짜"],
+      ...orders.map((o) => [
+        o.customer,
+        o.item,
+        o.color,
+        o.qty,
+        o.price,
+        o.qty * o.price,
+        o.done ? "완료" : "미완료",
+        o.memo,
+        o.createdAt,
+      ]),
+    ];
+
+    const csv = rows.map((r) => r.join(",")).join("\n");
+    const blob = new Blob(["\uFEFF" + csv], { type: "text/csv;charset=utf-8;" });
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = "핑퐁드림어스_정산.csv";
+    a.click();
+  }
+
+  const total = useMemo(
+    () => orders.reduce((sum, o) => sum + Number(o.qty) * Number(o.price), 0),
+    [orders]
+  );
+
+  if (!loggedIn) {
+    return (
+      <div className="min-h-screen relative flex items-center justify-center bg-black overflow-hidden">
+        <img
+          src="/dragon.png"
+          className="absolute inset-0 w-full h-full object-cover opacity-95"
+        />
+        <div className="absolute inset-0 bg-black/55" />
+
+        <form
+          onSubmit={login}
+          className="relative z-10 w-[90%] max-w-sm rounded-3xl border border-yellow-500/40 bg-black/75 p-8 shadow-2xl shadow-yellow-700/30 text-center"
+        >
+          <h1 className="text-4xl font-black text-yellow-400 tracking-tight">
+            핑퐁드림어스
+          </h1>
+          <p className="mt-2 text-yellow-100/80">주문 시스템</p>
+
+          <input
+            type="password"
+            placeholder="비밀번호"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            className="mt-8 w-full rounded-xl bg-black border border-yellow-500/50 px-4 py-3 text-yellow-100 outline-none focus:border-yellow-300"
+          />
+
+          <button className="mt-4 w-full rounded-xl bg-gradient-to-r from-yellow-600 to-yellow-300 py-3 font-black text-black">
+            입장하기
+          </button>
+        </form>
+      </div>
     );
   }
 
-  function deleteProduct(id) {
-    setProducts((prev) => prev.filter((product) => product.id !== id));
-  }
-
-  function downloadExcelCsv() {
-    const headers = ["날짜", "주문자", "용품명", "수량", "받는가격", "판매가격", "총받는가격", "총판매금액", "정산금", "완료여부"];
-    const rows = calculatedOrders.map((order) => [
-      koreanDate(order.date),
-      order.buyer || "",
-      order.productName || "",
-      order.qty || 0,
-      order.buyPrice || 0,
-      order.sellPrice || 0,
-      order.totalBuy || 0,
-      order.totalSell || 0,
-      order.profit || 0,
-      order.done ? "완료" : "미완료",
-    ]);
-    const summaryRows = [[], ["합계", "", "", "", "", "", totals.totalBuy, totals.totalSell, totals.profit, ""]];
-    const escapeCsv = (value) => `"${String(value).replaceAll('"', '""')}"`;
-    const csvContent = [headers, ...rows, ...summaryRows]
-      .map((row) => row.map(escapeCsv).join(","))
-      .join(String.fromCharCode(10));
-    const blob = new Blob(["﻿" + csvContent], { type: "text/csv;charset=utf-8;" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `핑퐁드림어스_정산파일_${today()}.csv`;
-    a.click();
-    URL.revokeObjectURL(url);
-  }
-
-  function handleLogin(event) {
-    event.preventDefault();
-    if (passwordInput === appPassword) {
-      localStorage.setItem(loginStorageKey, "yes");
-      setIsUnlocked(true);
-      setLoginError("");
-      setPasswordInput("");
-    } else {
-      setLoginError("비밀번호가 맞지 않습니다.");
-    }
-  }
-
-  function handleLogout() {
-    localStorage.removeItem(loginStorageKey);
-    setIsUnlocked(false);
-    setPasswordInput("");
-  }
-
-if (!isUnlocked) {
   return (
-    <main className="relative flex min-h-screen items-center justify-center overflow-hidden bg-[#050505] p-4 text-slate-100">
-
-      {/* 배경 */}
-      <div className="pointer-events-none absolute inset-0">
-        
-     <img
-  src="/dragon.png"
-  alt="dragon"
-  className="absolute inset-0 h-full w-full object-cover opacity-95"
- />
-        {/* 황금 용 느낌 */}
-        <div className="absolute left-1/2 top-1/2 h-[760px] w-[760px] -translate-x-1/2 -translate-y-1/2 rounded-full border border-yellow-500/10 shadow-[0_0_180px_rgba(245,158,11,0.18)]" />
-
-        <div className="absolute left-1/2 top-[45%] h-[460px] w-[1000px] -translate-x-1/2 -translate-y-1/2 rotate-[-14deg] rounded-full border-[24px] border-yellow-500/10" />
-
-        <div className="absolute left-[10%] top-[10%] h-80 w-80 rounded-full bg-yellow-500/5 blur-3xl" />
-
-        <div className="absolute bottom-[8%] right-[8%] h-[420px] w-[420px] rounded-full bg-amber-500/5 blur-3xl" />
-
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_transparent_0%,_rgba(0,0,0,0.45)_50%,_rgba(0,0,0,0.95)_100%)]" />
-      </div>
-
-      {/* 로그인 카드 */}
-<form
-  onSubmit={handleLogin}
-  className="relative z-10 w-full max-w-md rounded-[1.3rem] border border-[#d4a017]/50 bg-[#050505]/92 p-9 text-center shadow-[0_0_90px_rgba(212,160,23,0.28)] backdrop-blur-xl"
->
-
-  {/* 상단 */}
-  <div className="mb-7">
-
-    <p className="text-xs font-bold tracking-[0.45em] text-yellow-500/70">
-      PINGPONG DREAMERS
-    </p>
-
-    <h1 className="mt-4 bg-gradient-to-b from-[#fff3b0] via-[#f6d365] to-[#b8860b] bg-clip-text text-5xl font-black tracking-wide text-transparent">
-      핑퐁드림어스
-    </h1>
-
-    <p className="mt-3 text-xl font-bold tracking-[0.25em] text-amber-200">
-      주문 시스템
-    </p>
-
-  </div>
-
-  {/* 라인 */}
-  <div className="my-7 flex items-center gap-3">
-    <div className="h-px flex-1 bg-yellow-500/20" />
-    <span className="text-yellow-500/60">◆</span>
-    <div className="h-px flex-1 bg-yellow-500/20" />
-  </div>
-
-  {/* 설명 */}
-  <p className="mb-4 text-sm text-slate-300">
-    비밀번호를 입력해주세요
-  </p>
-
-  {/* 입력창 */}
-  <input
-    type="password"
-    value={passwordInput}
-    onChange={(e) => setPasswordInput(e.target.value)}
-    placeholder="PASSWORD"
-    className="w-full rounded-xl border border-[#d4a017]/40 bg-[#111111] px-5 py-4 text-center text-lg font-bold tracking-[0.2em] text-yellow-100 outline-none placeholder:text-slate-600 focus:border-yellow-300 focus:ring-2 focus:ring-yellow-500/20"
-  />
-
-  {/* 에러 */}
-  {loginError && (
-    <p className="mt-3 text-center text-sm font-bold text-rose-400">
-      {loginError}
-    </p>
-  )}
-
-  {/* 버튼 */}
-  <button
-    type="submit"
-    className="mt-6 w-full rounded-xl bg-gradient-to-r from-[#ffe27a] via-[#d4a017] to-[#8b6508] px-5 py-4 text-lg font-black tracking-wide text-[#111111] shadow-[0_0_40px_rgba(212,160,23,0.45)] transition hover:scale-[1.01] active:scale-95"
-  >
-    로그인
-  </button>
-
-</form>
-    </main>
-  );
-}
-
-return (
-  <main className="min-h-screen bg-[#050505] pb-28 text-slate-100">
-
-    <div className="mx-auto max-w-7xl space-y-5 p-5">
-
-      {/* 헤더 */}
-      <header className="relative overflow-hidden rounded-[1.5rem] border border-[#d4a017]/20 bg-gradient-to-br from-[#111111] via-[#1a1a1a] to-[#050505] p-6 text-slate-100 shadow-[0_0_35px_rgba(212,160,23,0.12)]">
-
-        <div className="absolute inset-0 opacity-10">
-          <img
-            src="/dragon.png"
-            alt="dragon"
-            className="absolute right-[-120px] top-[-80px] w-[500px]"
-          />
-        </div>
-
-        <div className="relative z-10 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-
+    <div className="min-h-screen bg-[#050505] text-yellow-50 p-4">
+      <header className="max-w-6xl mx-auto mb-5 rounded-3xl border border-yellow-500/30 bg-gradient-to-r from-black via-[#171100] to-black p-5 shadow-xl">
+        <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
-
-            <p className="inline-flex rounded-full border border-[#d4a017]/30 bg-[#111111] px-3 py-1 text-sm font-bold text-yellow-400">
-              Pingpong Dreamers
-            </p>
-
-            <h1 className="mt-3 bg-gradient-to-b from-[#fff3b0] via-[#f6d365] to-[#b8860b] bg-clip-text text-4xl font-black tracking-wide text-transparent">
-              핑퐁드림어스 정산파일
-            </h1>
-
-            <p className="mt-2 text-sm font-medium text-slate-400">
-              ORDER MANAGEMENT SYSTEM
-            </p>
-
+            <h1 className="text-3xl font-black text-yellow-400">핑퐁드림어스</h1>
+            <p className="text-yellow-100/60">보스 관리자 주문 · 정산 시스템</p>
           </div>
 
-          <button
-            onClick={() => addOrder()}
-            className="rounded-xl bg-gradient-to-r from-[#ffe27a] via-[#d4a017] to-[#8b6508] px-5 py-3 font-black text-[#111111] shadow-[0_0_40px_rgba(212,160,23,0.35)] transition hover:scale-[1.02] active:scale-95"
-          >
-            + 정산 추가
-          </button>
+          <div className="flex gap-2">
+            <button onClick={downloadCSV} className="goldBtn">CSV</button>
+            <button onClick={downloadBackup} className="goldBtn">백업</button>
+            <button
+              onClick={() => {
+                localStorage.removeItem("loggedIn");
+                setLoggedIn(false);
+              }}
+              className="darkBtn"
+            >
+              로그아웃
+            </button>
+          </div>
+        </div>
 
+        <div className="mt-4 grid grid-cols-2 md:grid-cols-4 gap-3">
+          <Stat title="총 주문" value={`${orders.length}건`} />
+          <Stat title="미완료" value={`${orders.filter((o) => !o.done).length}건`} />
+          <Stat title="완료" value={`${orders.filter((o) => o.done).length}건`} />
+          <Stat title="총 금액" value={`${total.toLocaleString()}원`} />
         </div>
       </header>
 
-      {/* 합계 */}
-      <section className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+      <main className="max-w-6xl mx-auto">
+        <nav className="grid grid-cols-3 gap-2 mb-4">
+          {[
+            ["orders", "정산내역"],
+            ["bulk", "대량입력"],
+            ["products", "용품관리"],
+          ].map(([key, label]) => (
+            <button
+              key={key}
+              onClick={() => setActiveTab(key)}
+              className={`rounded-2xl py-3 font-black border ${
+                activeTab === key
+                  ? "bg-yellow-400 text-black border-yellow-300"
+                  : "bg-black text-yellow-300 border-yellow-500/30"
+              }`}
+            >
+              {label}
+            </button>
+          ))}
+        </nav>
 
-        <div className="rounded-[1.4rem] border border-[#d4a017]/20 bg-[#0b0b0b]/90 p-5 shadow-[0_0_35px_rgba(212,160,23,0.12)]">
-          <p className="text-xs font-bold text-slate-500">
-            총 받는금액
-          </p>
+        {saving && <p className="mb-3 text-sm text-yellow-300">클라우드 저장중...</p>}
 
-          <p className="mt-2 text-3xl font-black text-yellow-100">
-            {won(totals.totalBuy)}
-          </p>
-        </div>
+        {activeTab === "orders" && (
+          <>
+            <section className="bossCard mb-4">
+              <h2 className="bossTitle">주문 추가</h2>
+              <div className="grid md:grid-cols-6 gap-2">
+                <input className="bossInput" placeholder="주문자" value={customer} onChange={(e) => setCustomer(e.target.value)} />
+                <select className="bossInput" value={item} onChange={(e) => setItem(e.target.value)}>
+                  <option value="">용품 선택</option>
+                  {products.map((p) => <option key={p.name}>{p.name}</option>)}
+                </select>
+                <input className="bossInput" placeholder="색상" value={color} onChange={(e) => setColor(e.target.value)} />
+                <input className="bossInput" type="number" value={qty} onChange={(e) => setQty(e.target.value)} />
+                <input className="bossInput" placeholder="메모" value={memo} onChange={(e) => setMemo(e.target.value)} />
+                <button onClick={addManualOrder} className="goldBtn">추가</button>
+              </div>
+            </section>
 
-        <div className="rounded-[1.4rem] border border-[#d4a017]/20 bg-[#0b0b0b]/90 p-5 shadow-[0_0_35px_rgba(212,160,23,0.12)]">
-          <p className="text-xs font-bold text-slate-500">
-            총 판매금액
-          </p>
-
-          <p className="mt-2 text-3xl font-black text-yellow-100">
-            {won(totals.totalSell)}
-          </p>
-        </div>
-
-        <div className="rounded-[1.4rem] border border-[#d4a017]/30 bg-gradient-to-r from-[#ffe27a] via-[#d4a017] to-[#8b6508] p-5 shadow-[0_0_45px_rgba(212,160,23,0.28)]">
-
-          <p className="text-xs font-bold text-[#111111]/70">
-            총 정산금
-          </p>
-
-          <p className="mt-2 text-3xl font-black text-[#111111]">
-            {won(totals.profit)}
-          </p>
-
-        </div>
-
-      </section>
-
-      {/* 다운로드 */}
-      <section className="rounded-[1.4rem] border border-[#d4a017]/20 bg-[#0b0b0b]/90 p-5 shadow-[0_0_35px_rgba(212,160,23,0.12)]">
-
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-
-          <div>
-
-            <h2 className="text-lg font-black text-yellow-100">
-              엑셀 다운로드
-            </h2>
-
-            <p className="text-sm text-slate-500">
-              현재 정산 내역을 CSV 파일로 저장합니다.
-            </p>
-
-          </div>
-
-          <button
-            onClick={downloadExcelCsv}
-            className="rounded-xl bg-gradient-to-r from-[#ffe27a] via-[#d4a017] to-[#8b6508] px-5 py-3 font-black text-[#111111] shadow-[0_0_40px_rgba(212,160,23,0.35)] transition hover:scale-[1.02] active:scale-95"
-          >
-            엑셀 다운로드
-          </button>
-
-        </div>
-      </section>
-
-      {/* 자동 정리 */}
-      <section className="rounded-[1.4rem] border border-[#d4a017]/20 bg-[#0b0b0b]/90 p-5 shadow-[0_0_35px_rgba(212,160,23,0.12)]">
-
-        <h2 className="mb-4 text-xl font-black text-yellow-100">
-          대량 입력 자동정리
-        </h2>
-
-        <div className="space-y-3">
-
-          <input
-            value={bulkBuyer}
-            onChange={(e) => setBulkBuyer(e.target.value)}
-            placeholder="주문자명"
-            className="w-full rounded-xl border border-[#d4a017]/30 bg-white px-4 py-4 text-slate-900 outline-none placeholder:text-slate-500 focus:border-yellow-400"
-          />
-
-          <textarea
-            value={bulkText}
-            onChange={(e) => setBulkText(e.target.value)}
-            rows={6}
-            placeholder="예시&#10;테너지05 3장&#10;테너지64 3장"
-            className="w-full resize-none rounded-xl border border-[#d4a017]/30 bg-white px-4 py-4 text-slate-900 outline-none placeholder:text-slate-500 focus:border-yellow-400"
-          />
-
-          <button
-            onClick={parseBulkOrders}
-            className="w-full rounded-xl bg-gradient-to-r from-[#ffe27a] via-[#d4a017] to-[#8b6508] px-5 py-4 font-black text-[#111111] shadow-[0_0_40px_rgba(212,160,23,0.35)] transition hover:scale-[1.01] active:scale-95"
-          >
-            자동으로 정산 추가
-          </button>
-
-        </div>
-      </section>
-
-    </div>
-  </main>
-);
-}
-
-function SettlementPage({
-  products,
-  calculatedOrders,
-  totals,
-  addOrder,
-  bulkBuyer,
-  setBulkBuyer,
-  bulkText,
-  setBulkText,
-  parseBulkOrders,
-  updateOrder,
-  deleteOrder,
-  downloadExcelCsv,
-}) {
-  const placeholderText =
-    "예시" +
-    String.fromCharCode(10) +
-    "테너지05 2장" +
-    String.fromCharCode(10) +
-    "테너지64 2장" +
-    String.fromCharCode(10) +
-    "MXP 4개";
-
-  return (
-    <>
-      <section className="grid grid-cols-1 gap-3 sm:grid-cols-3">
-        <SummaryCard title="총 받는금액" value={won(totals.totalBuy)} />
-        <SummaryCard title="총 판매금액" value={won(totals.totalSell)} />
-        <SummaryCard title="총 정산금" value={won(totals.profit)} highlight />
-      </section>
-
-      <section className="rounded-[1.7rem] border border-slate-700 bg-[#111827]/95 p-4 shadow-xl shadow-violet-100/70 backdrop-blur">
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <div>
-            <h2 className="text-lg font-black">엑셀 다운로드</h2>
-            <p className="text-xs text-slate-500">현재 정산 내역을 CSV 파일로 저장합니다.</p>
-          </div>
-          <button
-            onClick={downloadExcelCsv}
-            className="w-full rounded-2xl border border-slate-700 bg-white px-4 py-3 text-slate-900 outline-none"
-          >
-            엑셀 다운로드
-          </button>
-        </div>
-      </section>
-
-      <section className="rounded-[1.7rem] border border-slate-700 bg-[#111827]/95 p-4 shadow-xl shadow-violet-100/70 backdrop-blur">
-        <h2 className="mb-3 text-lg font-black">대량 입력 자동정리</h2>
-        <div className="space-y-2">
-          <input
-            value={bulkBuyer}
-            onChange={(e) => setBulkBuyer(e.target.value)}
-            placeholder="주문자명, 비워도 됨"
-            className="w-full rounded-2xl border border-violet-100 bg-white px-3 py-3 outline-none transition focus:border-fuchsia-400 focus:ring-2 focus:ring-fuchsia-100"
-          />
-         <textarea
-  value={bulkText}
-  onChange={(e) => setBulkText(e.target.value)}
-  className="w-full rounded-2xl border border-slate-700 bg-white px-4 py-3 text-slate-900 outline-none"
-/>
-          <button
-            onClick={parseBulkOrders}
-            className="w-full rounded-2xl bg-gradient-to-r from-violet-600 to-indigo-600 px-4 py-3 font-black text-slate-900 shadow-lg shadow-fuchsia-200 transition hover:scale-[1.01] active:scale-95"
-          >
-            자동으로 정산 추가
-          </button>
-        </div>
-      </section>
-
-      <section className="rounded-[1.7rem] border border-slate-700 bg-[#111827]/95p-4 shadow-xl shadow-violet-100/70 backdrop-blur">
-        <div className="mb-3 flex items-center justify-between gap-3">
-          <h2 className="text-lg font-black">정산 내역</h2>
-          <button
-            onClick={() => addOrder()}
-            className="w-full rounded-2xl border border-slate-700 bg-white px-4 py-3 text-slate-900 outline-none"
-          >
-            추가
-          </button>
-        </div>
-
-        {calculatedOrders.length === 0 ? (
-          <div className="rounded-3xl bg-slate-50 p-8 text-center text-sm text-slate-500">
-            아직 정산 내역이 없습니다. + 정산 추가를 눌러주세요.
-          </div>
-        ) : (
-          <div className="space-y-3">
-            {calculatedOrders.map((order) => (
-              <article
-                key={order.id}
-                className={`rounded-[1.7rem] border p-4 shadow-md ${
-                  order.done
-                    ? "border-emerald-200 bg-gradient-to-br from-emerald-900/40 via-[#111827] to-cyan-900/30 shadow-emerald-100/70"
-                    : "border-violet-100 bg-gradient-to-br from-[#111827] via-[#172033] to-[#1e293b] shadow-violet-100/60"
-                }`}
-              >
-                <div className="mb-3 flex items-center justify-between gap-2">
-                  <input
-                    type="date"
-                    value={order.date}
-                    onChange={(e) => updateOrder(order.id, "date", e.target.value)}
-                    className="rounded-2xl border border-slate-700 bg-[#1a2336] text-slate-100 px-3 py-2 text-sm outline-none focus:border-violet-400"
-                  />
-                  <div className="flex gap-2">
-                    <button
-                      onClick={() => updateOrder(order.id, "done", !order.done)}
-                      className={`rounded-2xl px-3 py-2 text-sm font-bold transition active:scale-95 ${
-                        order.done
-                          ? "bg-emerald-600 text-white shadow-md shadow-emerald-200"
-                          : "bg-slate-200 text-slate-600 hover:bg-slate-300"
-                      }`}
-                    >
-                      {order.done ? "완료" : "미완료"}
-                    </button>
-                    <button
-                      onClick={() => deleteOrder(order.id)}
-                      className="rounded-2xl bg-rose-100 px-3 py-2 text-sm font-bold text-rose-600 transition hover:bg-rose-200 active:scale-95"
-                    >
-                      삭제
-                    </button>
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
-                  <input
-                    value={order.buyer}
-                    onChange={(e) => updateOrder(order.id, "buyer", e.target.value)}
-                    placeholder="주문자"
-                    className="rounded-2xl border border-slate-700 bg-[#1a2336] text-slate-100 px-3 py-3 placeholder:text-slate-500 focus:border-violet-400 focus:ring-2 focus:ring-violet-100"
-                  />
-                  <select
-                    value={order.productName}
-                    onChange={(e) => updateOrder(order.id, "productName", e.target.value)}
-                    className="rounded-2xl border border-slate-700 bg-[#1a2336] text-slate-100 px-3 py-3 placeholder:text-slate-500 focus:border-violet-400 focus:ring-2 focus:ring-violet-100"
-                  >
-                    <option value="">용품 선택</option>
-                    {products.map((product) => (
-                      <option key={product.id} value={product.name}>
-                        {product.name}
-                      </option>
-                    ))}
-                  </select>
-                  <input
-                    type="number"
-                    value={order.qty}
-                    onChange={(e) => updateOrder(order.id, "qty", e.target.value)}
-                    placeholder="수량"
-                    className="rounded-2xl border border-slate-700 bg-[#1a2336] text-slate-100 px-3 py-3 placeholder:text-slate-500 focus:border-violet-400 focus:ring-2 focus:ring-violet-100"
-                  />
-                </div>
-
-                <div className="mt-3 grid grid-cols-1 gap-2 text-sm sm:grid-cols-5">
-                  <Info label="받는가격" value={won(order.buyPrice)} />
-                  <Info label="판매가격" value={won(order.sellPrice)} />
-                  <Info label="총 받는금액" value={won(order.totalBuy)} />
-                  <Info label="총 판매금액" value={won(order.totalSell)} />
-                  <Info label="정산금" value={won(order.profit)} green />
-                </div>
-              </article>
-            ))}
-          </div>
+            <OrderTable orders={orders} toggleDone={toggleDone} removeOrder={removeOrder} />
+          </>
         )}
-      </section>
-    </>
+
+        {activeTab === "bulk" && (
+          <section className="bossCard">
+            <h2 className="bossTitle">카톡 복붙 자동정리</h2>
+            <input
+              className="bossInput mb-3"
+              placeholder="주문자 이름"
+              value={customer}
+              onChange={(e) => setCustomer(e.target.value)}
+            />
+            <textarea
+              className="bossInput h-72"
+              placeholder={`예시)
+MXP 적 3 검 1
+테너지05검1
+디그닉스 05 적 1
+넥시시합구6구 2개`}
+              value={bulkText}
+              onChange={(e) => setBulkText(e.target.value)}
+            />
+            <button onClick={parseBulk} className="goldBtn mt-3 w-full">
+              자동 정산 추가
+            </button>
+          </section>
+        )}
+
+        {activeTab === "products" && (
+          <section className="bossCard">
+            <div className="flex justify-between items-center mb-3">
+              <h2 className="bossTitle">용품관리</h2>
+              <button onClick={addProduct} className="goldBtn">용품 추가</button>
+            </div>
+
+            <div className="grid gap-2">
+              {products.map((p) => (
+                <div key={p.name} className="flex justify-between items-center rounded-xl border border-yellow-500/20 bg-black/50 p-3">
+                  <div>
+                    <p className="font-black text-yellow-300">{p.name}</p>
+                    <p className="text-sm text-yellow-100/60">{p.price.toLocaleString()}원</p>
+                  </div>
+                  <button onClick={() => removeProduct(p.name)} className="darkBtn">삭제</button>
+                </div>
+              ))}
+            </div>
+          </section>
+        )}
+      </main>
+    </div>
   );
 }
 
-function ProductPage({ products, newProduct, setNewProduct, addProduct, updateProduct, deleteProduct }) {
+function Stat({ title, value }) {
   return (
-    <section className="rounded-[1.7rem] border border-slate-700 bg-[#111827]/95 p-4 shadow-xl shadow-violet-100/70 backdrop-blur">
-      <h2 className="mb-3 text-lg font-black">용품관리</h2>
+    <div className="rounded-2xl border border-yellow-500/20 bg-black/60 p-4">
+      <p className="text-sm text-yellow-100/50">{title}</p>
+      <p className="text-2xl font-black text-yellow-300">{value}</p>
+    </div>
+  );
+}
 
-      <div className="mb-4 grid grid-cols-1 gap-2 sm:grid-cols-[1fr_0.7fr_0.7fr_auto]">
-        <input
-          value={newProduct.name}
-          onChange={(e) => setNewProduct({ ...newProduct, name: e.target.value })}
-          placeholder="용품명"
-          className="rounded-2xl border border-slate-700 bg-[#1a2336] text-slate-100 px-3 py-3 placeholder:text-slate-500 focus:border-violet-400 focus:ring-2 focus:ring-violet-100"
-        />
-        <input
-          type="number"
-          value={newProduct.buyPrice}
-          onChange={(e) => setNewProduct({ ...newProduct, buyPrice: e.target.value })}
-          placeholder="받는가격"
-          className="rounded-2xl border border-slate-700 bg-[#1a2336] text-slate-100 px-3 py-3 placeholder:text-slate-500 focus:border-violet-400 focus:ring-2 focus:ring-violet-100"
-        />
-        <input
-          type="number"
-          value={newProduct.sellPrice}
-          onChange={(e) => setNewProduct({ ...newProduct, sellPrice: e.target.value })}
-          placeholder="판매가격"
-          className="rounded-2xl border border-slate-700 bg-[#1a2336] text-slate-100 px-3 py-3 placeholder:text-slate-500 focus:border-violet-400 focus:ring-2 focus:ring-violet-100"
-        />
-        <button
-          onClick={addProduct}
-          className="w-full rounded-2xl border border-slate-700 bg-white px-4 py-3 text-slate-900 outline-none"
-        >
-          추가
-        </button>
-      </div>
-
-      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
-        {products.map((product) => (
-          <article key={product.id} className="rounded-[1.7rem] border border-violet-100 bg-gradient-to-br from-white via-violet-50/60 to-cyan-50/70 p-4 shadow-md shadow-violet-100/60">
-            <div className="mb-3 flex items-center gap-2">
-              <input
-                value={product.name}
-                onChange={(e) => updateProduct(product.id, "name", e.target.value)}
-                className="w-full rounded-2xl border border-slate-700 bg-[#1a2336] text-slate-100 px-3 py-3 font-bold outline-none focus:border-violet-400"
-              />
-              <button
-                onClick={() => deleteProduct(product.id)}
-                className="rounded-2xl bg-rose-100 px-3 py-3 text-sm font-bold text-rose-600 transition hover:bg-rose-200 active:scale-95"
-              >
-                삭제
-              </button>
-            </div>
-            <div className="grid grid-cols-2 gap-2">
-              <label className="text-xs font-bold text-slate-500">
-                받는가격
-                <input
-                  type="number"
-                  value={product.buyPrice}
-                  onChange={(e) => updateProduct(product.id, "buyPrice", e.target.value)}
-                  className="mt-1 w-full rounded-2xl border border-slate-700 bg-[#1a2336] text-slate-100 px-3 py-3 text-white outline-none focus:border-violet-400"
-                />
-              </label>
-              <label className="text-xs font-bold text-slate-500">
-                판매가격
-                <input
-                  type="number"
-                  value={product.sellPrice}
-                  onChange={(e) => updateProduct(product.id, "sellPrice", e.target.value)}
-                  className="mt-1 w-full rounded-2xl border border-slate-700 bg-[#1a2336] text-slate-100 px-3 py-3 text-white outline-none focus:border-violet-400"
-                />
-              </label>
-            </div>
-          </article>
-        ))}
-      </div>
+function OrderTable({ orders, toggleDone, removeOrder }) {
+  return (
+    <section className="bossCard overflow-x-auto">
+      <h2 className="bossTitle">정산 내역</h2>
+      <table className="w-full min-w-[850px] text-sm">
+        <thead className="text-yellow-300 border-b border-yellow-500/30">
+          <tr>
+            <th className="p-2">상태</th>
+            <th className="p-2">주문자</th>
+            <th className="p-2">용품</th>
+            <th className="p-2">색상</th>
+            <th className="p-2">수량</th>
+            <th className="p-2">단가</th>
+            <th className="p-2">합계</th>
+            <th className="p-2">메모</th>
+            <th className="p-2">관리</th>
+          </tr>
+        </thead>
+        <tbody>
+          {orders.map((o) => (
+            <tr key={o.id} className={`border-b border-yellow-500/10 ${o.done ? "opacity-45" : ""}`}>
+              <td className="p-2 text-center">
+                <button onClick={() => toggleDone(o.id)} className={o.done ? "goldBtn" : "darkBtn"}>
+                  {o.done ? "완료" : "미완료"}
+                </button>
+              </td>
+              <td className="p-2">{o.customer}</td>
+              <td className="p-2 text-yellow-300 font-bold">{o.item}</td>
+              <td className="p-2">{o.color}</td>
+              <td className="p-2 text-center">{o.qty}</td>
+              <td className="p-2 text-right">{Number(o.price).toLocaleString()}</td>
+              <td className="p-2 text-right font-black text-yellow-300">
+                {(Number(o.qty) * Number(o.price)).toLocaleString()}
+              </td>
+              <td className="p-2">{o.memo}</td>
+              <td className="p-2 text-center">
+                <button onClick={() => removeOrder(o.id)} className="darkBtn">삭제</button>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
     </section>
   );
 }
 
-function SummaryCard({ title, value, highlight }) {
-  return (
-    <div className={`rounded-[1.7rem] p-5 shadow-xl ${highlight ? "bg-gradient-to-br from-violet-600 to-indigo-600 text-white shadow-fuchsia-200" : "border border-slate-700 bg-[#111827]/95 shadow-violet-100/70"}`}>
-      <p className={`text-xs font-bold ${highlight ? "text-violet-100" : "text-slate-500"}`}>{title}</p>
-      <p className="mt-1 text-xl font-black">{value}</p>
-    </div>
-  );
+export default App;
+
+.bossCard {
+  border: 1px solid rgba(234, 179, 8, 0.25);
+  background: linear-gradient(135deg, rgba(0,0,0,0.95), rgba(35,25,0,0.78));
+  border-radius: 24px;
+  padding: 20px;
+  box-shadow: 0 20px 50px rgba(0,0,0,0.45);
 }
 
-function Info({ label, value, green }) {
-  return (
-    <div className={`rounded-2xl p-3 ${green ? "bg-gradient-to-br from-emerald-100 to-cyan-100 text-emerald-700" : "bg-[#1a2336] text-slate-100 shadow-black/20"}`}>
-      <p className="text-xs font-bold opacity-60">{label}</p>
-      <p className="mt-1 font-black">{value}</p>
-    </div>
-  );
+.bossTitle {
+  font-size: 20px;
+  font-weight: 900;
+  color: #facc15;
+  margin-bottom: 14px;
 }
 
-function TabButton({ active, onClick, label }) {
-  return (
-    <button
-      onClick={onClick}
-      className={`rounded-2xl px-4 py-3 text-sm font-black transition ${
-        active ? "bg-gradient-to-r from-violet-600 to-indigo-600 text-white shadow-lg shadow-fuchsia-200" : "bg-[#1a2336] text-slate-300 hover:bg-violet-100 hover:text-violet-700"
-      }`}
-    >
-      {label}
-    </button>
-  );
+.bossInput {
+  width: 100%;
+  border-radius: 14px;
+  border: 1px solid rgba(234, 179, 8, 0.35);
+  background: rgba(0,0,0,0.72);
+  color: #fef3c7;
+  padding: 12px 14px;
+  outline: none;
+}
+
+.bossInput:focus {
+  border-color: #facc15;
+}
+
+.goldBtn {
+  border-radius: 14px;
+  background: linear-gradient(135deg, #ca8a04, #fde047);
+  color: black;
+  font-weight: 900;
+  padding: 10px 14px;
+}
+
+.darkBtn {
+  border-radius: 14px;
+  border: 1px solid rgba(234, 179, 8, 0.35);
+  background: black;
+  color: #facc15;
+  font-weight: 800;
+  padding: 10px 14px;
 }
