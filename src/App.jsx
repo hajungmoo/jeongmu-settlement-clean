@@ -463,7 +463,7 @@ function SettlementPage({
         <SummaryCard title="총 정산금" value={won(totals.profit)} highlight />
       </section>
 
-      <section className="rounded-[1.7rem] border border-white/80 bg-white/90 p-4 shadow-xl shadow-violet-100/70 backdrop-blur">
+      <section className="rounded-[1.7rem] border border-slate-700 bg-[#111827]/95 p-4 shadow-xl shadow-violet-100/70 backdrop-blur">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <h2 className="text-lg font-black">엑셀 다운로드</h2>
@@ -478,7 +478,7 @@ function SettlementPage({
         </div>
       </section>
 
-      <section className="rounded-[1.7rem] border border-white/80 bg-white/90 p-4 shadow-xl shadow-violet-100/70 backdrop-blur">
+      <section className="rounded-[1.7rem] border border-slate-700 bg-[#111827]/95 p-4 shadow-xl shadow-violet-100/70 backdrop-blur">
         <h2 className="mb-3 text-lg font-black">대량 입력 자동정리</h2>
         <div className="space-y-2">
           <input
@@ -496,14 +496,14 @@ function SettlementPage({
           />
           <button
             onClick={parseBulkOrders}
-            className="w-full rounded-2xl bg-gradient-to-r from-fuchsia-600 via-violet-600 to-cyan-600 px-4 py-3 font-black text-white shadow-lg shadow-fuchsia-200 transition hover:scale-[1.01] active:scale-95"
+            className="w-full rounded-2xl bg-gradient-to-r from-violet-600 to-indigo-600 px-4 py-3 font-black text-white shadow-lg shadow-fuchsia-200 transition hover:scale-[1.01] active:scale-95"
           >
             자동으로 정산 추가
           </button>
         </div>
       </section>
 
-      <section className="rounded-[1.7rem] border border-white/80 bg-white/90 p-4 shadow-xl shadow-violet-100/70 backdrop-blur">
+      <section className="rounded-[1.7rem] border border-slate-700 bg-[#111827]/95p-4 shadow-xl shadow-violet-100/70 backdrop-blur">
         <div className="mb-3 flex items-center justify-between gap-3">
           <h2 className="text-lg font-black">정산 내역</h2>
           <button
@@ -525,8 +525,8 @@ function SettlementPage({
                 key={order.id}
                 className={`rounded-[1.7rem] border p-4 shadow-md ${
                   order.done
-                    ? "border-emerald-200 bg-gradient-to-br from-emerald-50 via-white to-cyan-50 shadow-emerald-100/70"
-                    : "border-violet-100 bg-gradient-to-br from-white via-violet-50/60 to-cyan-50/70 shadow-violet-100/60"
+                    ? "border-emerald-200 bg-gradient-to-br from-emerald-900/40 via-[#111827] to-cyan-900/30 shadow-emerald-100/70"
+                    : "border-violet-100 bg-gradient-to-br from-[#111827] via-[#172033] to-[#1e293b] shadow-violet-100/60"
                 }`}
               >
                 <div className="mb-3 flex items-center justify-between gap-2">
@@ -534,7 +534,7 @@ function SettlementPage({
                     type="date"
                     value={order.date}
                     onChange={(e) => updateOrder(order.id, "date", e.target.value)}
-                    className="rounded-2xl border border-slate-200 bg-white px-3 py-2 text-sm outline-none focus:border-violet-400"
+                    className="rounded-2xl border border-slate-700 bg-[#1a2336] text-slate-100 px-3 py-2 text-sm outline-none focus:border-violet-400"
                   />
                   <div className="flex gap-2">
                     <button
@@ -561,12 +561,12 @@ function SettlementPage({
                     value={order.buyer}
                     onChange={(e) => updateOrder(order.id, "buyer", e.target.value)}
                     placeholder="주문자"
-                    className="rounded-2xl border border-slate-200 bg-white px-3 py-3 outline-none focus:border-violet-400 focus:ring-2 focus:ring-violet-100"
+                    className="rounded-2xl border border-slate-700 bg-[#1a2336] text-slate-100 px-3 py-3 outline-none focus:border-violet-400 focus:ring-2 focus:ring-violet-100"
                   />
                   <select
                     value={order.productName}
                     onChange={(e) => updateOrder(order.id, "productName", e.target.value)}
-                    className="rounded-2xl border border-slate-200 bg-white px-3 py-3 outline-none focus:border-violet-400 focus:ring-2 focus:ring-violet-100"
+                    className="rounded-2xl border border-slate-700 bg-[#1a2336] text-slate-100 px-3 py-3 outline-none focus:border-violet-400 focus:ring-2 focus:ring-violet-100"
                   >
                     <option value="">용품 선택</option>
                     {products.map((product) => (
@@ -580,7 +580,7 @@ function SettlementPage({
                     value={order.qty}
                     onChange={(e) => updateOrder(order.id, "qty", e.target.value)}
                     placeholder="수량"
-                    className="rounded-2xl border border-slate-200 bg-white px-3 py-3 outline-none focus:border-violet-400 focus:ring-2 focus:ring-violet-100"
+                    className="rounded-2xl border border-slate-700 bg-[#1a2336] text-slate-100 px-3 py-3 outline-none focus:border-violet-400 focus:ring-2 focus:ring-violet-100"
                   />
                 </div>
 
@@ -602,7 +602,7 @@ function SettlementPage({
 
 function ProductPage({ products, newProduct, setNewProduct, addProduct, updateProduct, deleteProduct }) {
   return (
-    <section className="rounded-[1.7rem] border border-white/80 bg-white/90 p-4 shadow-xl shadow-violet-100/70 backdrop-blur">
+    <section className="rounded-[1.7rem] border border-slate-700 bg-[#111827]/95 p-4 shadow-xl shadow-violet-100/70 backdrop-blur">
       <h2 className="mb-3 text-lg font-black">용품관리</h2>
 
       <div className="mb-4 grid grid-cols-1 gap-2 sm:grid-cols-[1fr_0.7fr_0.7fr_auto]">
@@ -610,25 +610,25 @@ function ProductPage({ products, newProduct, setNewProduct, addProduct, updatePr
           value={newProduct.name}
           onChange={(e) => setNewProduct({ ...newProduct, name: e.target.value })}
           placeholder="용품명"
-          className="rounded-2xl border border-slate-200 bg-white px-3 py-3 outline-none focus:border-violet-400 focus:ring-2 focus:ring-violet-100"
+          className="rounded-2xl border border-slate-700 bg-[#1a2336] text-slate-100 px-3 py-3 outline-none focus:border-violet-400 focus:ring-2 focus:ring-violet-100"
         />
         <input
           type="number"
           value={newProduct.buyPrice}
           onChange={(e) => setNewProduct({ ...newProduct, buyPrice: e.target.value })}
           placeholder="받는가격"
-          className="rounded-2xl border border-slate-200 bg-white px-3 py-3 outline-none focus:border-violet-400 focus:ring-2 focus:ring-violet-100"
+          className="rounded-2xl border border-slate-700 bg-[#1a2336] text-slate-100 px-3 py-3 outline-none focus:border-violet-400 focus:ring-2 focus:ring-violet-100"
         />
         <input
           type="number"
           value={newProduct.sellPrice}
           onChange={(e) => setNewProduct({ ...newProduct, sellPrice: e.target.value })}
           placeholder="판매가격"
-          className="rounded-2xl border border-slate-200 bg-white px-3 py-3 outline-none focus:border-violet-400 focus:ring-2 focus:ring-violet-100"
+          className="rounded-2xl border border-slate-700 bg-[#1a2336] text-slate-100 px-3 py-3 outline-none focus:border-violet-400 focus:ring-2 focus:ring-violet-100"
         />
         <button
           onClick={addProduct}
-          className="rounded-2xl bg-gradient-to-r from-fuchsia-600 via-violet-600 to-cyan-600 px-4 py-3 font-black text-white shadow-lg shadow-fuchsia-200 transition hover:scale-[1.01] active:scale-95"
+          className="rounded-2xl bg-gradient-to-r from-violet-600 to-indigo-600 px-4 py-3 font-black text-white shadow-lg shadow-fuchsia-200 transition hover:scale-[1.01] active:scale-95"
         >
           추가
         </button>
@@ -641,7 +641,7 @@ function ProductPage({ products, newProduct, setNewProduct, addProduct, updatePr
               <input
                 value={product.name}
                 onChange={(e) => updateProduct(product.id, "name", e.target.value)}
-                className="w-full rounded-2xl border border-slate-200 bg-white px-3 py-3 font-bold outline-none focus:border-violet-400"
+                className="w-full rounded-2xl border border-slate-700 bg-[#1a2336] text-slate-100 px-3 py-3 font-bold outline-none focus:border-violet-400"
               />
               <button
                 onClick={() => deleteProduct(product.id)}
@@ -657,7 +657,7 @@ function ProductPage({ products, newProduct, setNewProduct, addProduct, updatePr
                   type="number"
                   value={product.buyPrice}
                   onChange={(e) => updateProduct(product.id, "buyPrice", e.target.value)}
-                  className="mt-1 w-full rounded-2xl border border-slate-200 bg-white px-3 py-3 text-slate-900 outline-none focus:border-violet-400"
+                  className="mt-1 w-full rounded-2xl border border-slate-700 bg-[#1a2336] text-slate-100 px-3 py-3 text-slate-900 outline-none focus:border-violet-400"
                 />
               </label>
               <label className="text-xs font-bold text-slate-500">
@@ -666,7 +666,7 @@ function ProductPage({ products, newProduct, setNewProduct, addProduct, updatePr
                   type="number"
                   value={product.sellPrice}
                   onChange={(e) => updateProduct(product.id, "sellPrice", e.target.value)}
-                  className="mt-1 w-full rounded-2xl border border-slate-200 bg-white px-3 py-3 text-slate-900 outline-none focus:border-violet-400"
+                  className="mt-1 w-full rounded-2xl border border-slate-700 bg-[#1a2336] text-slate-100 px-3 py-3 text-slate-900 outline-none focus:border-violet-400"
                 />
               </label>
             </div>
@@ -679,7 +679,7 @@ function ProductPage({ products, newProduct, setNewProduct, addProduct, updatePr
 
 function SummaryCard({ title, value, highlight }) {
   return (
-    <div className={`rounded-[1.7rem] p-5 shadow-xl ${highlight ? "bg-gradient-to-br from-fuchsia-600 via-violet-600 to-cyan-600 text-white shadow-fuchsia-200" : "border border-white/80 bg-white/90 shadow-violet-100/70"}`}>
+    <div className={`rounded-[1.7rem] p-5 shadow-xl ${highlight ? "bg-gradient-to-br from-violet-600 to-indigo-600 text-white shadow-fuchsia-200" : "border border-slate-700 bg-[#111827]/95 shadow-violet-100/70"}`}>
       <p className={`text-xs font-bold ${highlight ? "text-violet-100" : "text-slate-500"}`}>{title}</p>
       <p className="mt-1 text-xl font-black">{value}</p>
     </div>
@@ -688,7 +688,7 @@ function SummaryCard({ title, value, highlight }) {
 
 function Info({ label, value, green }) {
   return (
-    <div className={`rounded-2xl p-3 ${green ? "bg-gradient-to-br from-emerald-100 to-cyan-100 text-emerald-700" : "bg-white text-slate-800 shadow-sm"}`}>
+    <div className={`rounded-2xl p-3 ${green ? "bg-gradient-to-br from-emerald-100 to-cyan-100 text-emerald-700" : "bg-[#1a2336] text-slate-100 shadow-black/20"}`}>
       <p className="text-xs font-bold opacity-60">{label}</p>
       <p className="mt-1 font-black">{value}</p>
     </div>
@@ -700,7 +700,7 @@ function TabButton({ active, onClick, label }) {
     <button
       onClick={onClick}
       className={`rounded-2xl px-4 py-3 text-sm font-black transition ${
-        active ? "bg-gradient-to-r from-fuchsia-600 via-violet-600 to-cyan-600 text-white shadow-lg shadow-fuchsia-200" : "bg-slate-100 text-slate-500 hover:bg-violet-100 hover:text-violet-700"
+        active ? "bg-gradient-to-r from-violet-600 to-indigo-600 text-white shadow-lg shadow-fuchsia-200" : "bg-[#1a2336] text-slate-300 hover:bg-violet-100 hover:text-violet-700"
       }`}
     >
       {label}
