@@ -4,7 +4,7 @@ import { supabase } from "./supabase.js";
 const today = () => new Date().toISOString().slice(0, 10);
 const storageKey = "jeongmu-settlement-tabs-v2";
 const loginStorageKey = "jeongmu-settlement-login-ok";
-const appPassword = "akdlfem1@3$";
+const appPassword = "12345";
 const cloudRowId = "main";
 
 const defaultProducts = [
