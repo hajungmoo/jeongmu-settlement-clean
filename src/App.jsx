@@ -496,7 +496,7 @@ function SettlementPage({
           />
           <button
             onClick={parseBulkOrders}
-            className="w-full rounded-2xl bg-gradient-to-r from-violet-600 to-indigo-600 px-4 py-3 font-black text-white shadow-lg shadow-fuchsia-200 transition hover:scale-[1.01] active:scale-95"
+            className="w-full rounded-2xl bg-gradient-to-r from-violet-600 to-indigo-600 px-4 py-3 font-black text-slate-900 shadow-lg shadow-fuchsia-200 transition hover:scale-[1.01] active:scale-95"
           >
             자동으로 정산 추가
           </button>
