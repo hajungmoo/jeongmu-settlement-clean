@@ -44,7 +44,7 @@ export default function App() {
   const [newProduct, setNewProduct] = useState({ name: "", buyPrice: "", sellPrice: "" });
   const [bulkBuyer, setBulkBuyer] = useState("");
   const [bulkText, setBulkText] = useState("");
-
+  const [priceBulkText, setPriceBulkText] = useState("");
   useEffect(() => {
     async function loadCloudData() {
       try {
@@ -291,6 +291,55 @@ export default function App() {
     setProducts((prev) => prev.filter((product) => product.id !== id));
   }
 
+  function parsePriceBulk() {
+    const lines = splitLines(priceBulkText);
+
+    if (lines.length === 0) {
+      alert("가격표를 붙여넣어주세요.");
+      return;
+    }
+
+    setProducts((prev) => {
+      let next = [...prev];
+
+      lines.forEach((line) => {
+        const parts = line.replaceAll(",", " ").split(" ").filter(Boolean);
+        if (parts.length < 3) return;
+
+        const sellPrice = Number(parts[parts.length - 1].replace(/[^0-9]/g, ""));
+        const buyPrice = Number(parts[parts.length - 2].replace(/[^0-9]/g, ""));
+        const name = parts.slice(0, -2).join(" ");
+
+        if (!name || !buyPrice) return;
+
+        const foundIndex = next.findIndex(
+          (product) => normalizeName(product.name) === normalizeName(name)
+        );
+
+        if (foundIndex >= 0) {
+          next[foundIndex] = {
+            ...next[foundIndex],
+            name,
+            buyPrice,
+            sellPrice,
+          };
+        } else {
+          next.push({
+            id: Date.now() + Math.random(),
+            name,
+            buyPrice,
+            sellPrice,
+          });
+        }
+      });
+
+      return next;
+    });
+
+    setPriceBulkText("");
+    alert("가격표가 적용되었습니다.");
+  }
+
   function downloadExcelCsv() {
     const headers = ["날짜", "주문자", "용품명", "수량", "받는가격", "판매가격", "총받는가격", "총판매금액", "정산금", "완료여부"];
     const rows = calculatedOrders.map((order) => [
@@ -457,6 +506,9 @@ export default function App() {
             addProduct={addProduct}
             updateProduct={updateProduct}
             deleteProduct={deleteProduct}
+            priceBulkText={priceBulkText}
+            setPriceBulkText={setPriceBulkText}
+            parsePriceBulk={parsePriceBulk}
           />
         )}
       </div>
@@ -617,10 +669,42 @@ function SettlementPage({
   );
 }
 
-function ProductPage({ products, newProduct, setNewProduct, addProduct, updateProduct, deleteProduct }) {
+function ProductPage({
+  products,
+  newProduct,
+  setNewProduct,
+  addProduct,
+  updateProduct,
+  deleteProduct,
+  priceBulkText,
+  setPriceBulkText,
+  parsePriceBulk,
+}) {
   return (
     <section className="rounded-[1.7rem] border border-yellow-500/20 bg-black/60 p-4 shadow-xl">
       <h2 className="mb-3 text-lg font-black text-yellow-300">용품관리</h2>
+
+      <div className="mb-4 rounded-2xl border border-yellow-500/20 bg-black/50 p-4">
+        <h3 className="mb-2 font-black text-yellow-300">가격표 대량입력</h3>
+        <p className="mb-2 text-xs text-yellow-100/50">형식: 용품명 받는가격 판매가격</p>
+
+        <textarea
+          value={priceBulkText}
+          onChange={(e) => setPriceBulkText(e.target.value)}
+          placeholder={`예시)
+테너지05 63000 79000
+테너지64 63000 79000
+MXP 40000 52000`}
+          className="h-36 w-full rounded-2xl border border-yellow-500/25 bg-black px-4 py-3 text-yellow-100 outline-none"
+        />
+
+        <button
+          onClick={parsePriceBulk}
+          className="mt-2 w-full rounded-2xl bg-yellow-400 px-4 py-3 font-black text-black"
+        >
+          가격표 자동 적용
+        </button>
+      </div>
 
       <div className="mb-4 grid grid-cols-1 gap-2 sm:grid-cols-[1fr_0.7fr_0.7fr_auto]">
         <input
