@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { supabase } from "./supabase.js";
+import { supabase } from "./supabase.";
 
 const CLOUD_ID = "main";
 const PASSWORD = "12345";
