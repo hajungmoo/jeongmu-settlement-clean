@@ -221,7 +221,9 @@ export default function App() {
           <p className="text-sm font-bold text-violet-600">{koreanDate(today())}</p>
           <div className="mt-2 flex items-center justify-between gap-3">
             <div>
-              <h1 className="text-2xl font-black">정무의 정산앱</h1>
+              <h1 className="text-3xl font-black tracking-tight text-violet-700">
+  핑퐁드림어스 정산파일
+</h1>
               <p className="text-sm text-slate-500">용품관리 연결됨 · {savedText}</p>
             </div>
             <button
