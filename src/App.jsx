@@ -339,62 +339,84 @@ export default function App() {
 if (!isUnlocked) {
   return (
     <main className="relative flex min-h-screen items-center justify-center overflow-hidden bg-[#050505] p-4 text-slate-100">
-      {/* 황금 용 실루엣 배경 */}
+
+      {/* 배경 */}
       <div className="pointer-events-none absolute inset-0">
-        <div className="absolute left-1/2 top-1/2 h-[720px] w-[720px] -translate-x-1/2 -translate-y-1/2 rounded-full border border-yellow-500/20 shadow-[0_0_120px_rgba(245,158,11,0.25)]" />
-        <div className="absolute left-1/2 top-[46%] h-[420px] w-[900px] -translate-x-1/2 -translate-y-1/2 rounded-full border-[18px] border-yellow-500/10 blur-[1px] rotate-[-18deg]" />
-        <div className="absolute left-[18%] top-[18%] h-72 w-72 rounded-full bg-yellow-500/10 blur-3xl" />
-        <div className="absolute right-[12%] bottom-[12%] h-96 w-96 rounded-full bg-amber-600/10 blur-3xl" />
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_transparent_0%,_rgba(0,0,0,0.25)_42%,_rgba(0,0,0,0.9)_100%)]" />
+
+        {/* 황금 용 느낌 */}
+        <div className="absolute left-1/2 top-1/2 h-[760px] w-[760px] -translate-x-1/2 -translate-y-1/2 rounded-full border border-yellow-500/10 shadow-[0_0_180px_rgba(245,158,11,0.18)]" />
+
+        <div className="absolute left-1/2 top-[45%] h-[460px] w-[1000px] -translate-x-1/2 -translate-y-1/2 rotate-[-14deg] rounded-full border-[24px] border-yellow-500/10" />
+
+        <div className="absolute left-[10%] top-[10%] h-80 w-80 rounded-full bg-yellow-500/5 blur-3xl" />
+
+        <div className="absolute bottom-[8%] right-[8%] h-[420px] w-[420px] rounded-full bg-amber-500/5 blur-3xl" />
+
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_transparent_0%,_rgba(0,0,0,0.45)_50%,_rgba(0,0,0,0.95)_100%)]" />
       </div>
 
       {/* 로그인 카드 */}
       <form
         onSubmit={handleLogin}
-        className="relative z-10 w-full max-w-md rounded-[2rem] border border-yellow-500/35 bg-black/70 p-8 text-center shadow-[0_0_60px_rgba(245,158,11,0.25)] backdrop-blur-xl"
+        className="relative z-10 w-full max-w-md rounded-[1.2rem] border border-yellow-500/20 bg-[#050505]/92 p-10 shadow-[0_0_80px_rgba(245,158,11,0.12)] backdrop-blur-xl"
       >
-        <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-br from-yellow-300 to-amber-600 text-3xl shadow-lg shadow-yellow-500/20">
-          🏓
+
+        {/* 로고 */}
+        <div className="mb-6 flex items-center justify-center">
+          <div className="flex h-20 w-20 items-center justify-center rounded-full border border-yellow-500/20 bg-gradient-to-br from-[#f6d365] via-[#d4a017] to-[#b8860b] text-3xl font-black text-black shadow-lg shadow-yellow-500/10">
+            DR
+          </div>
         </div>
 
-        <h1 className="text-4xl font-black tracking-tight text-transparent bg-clip-text bg-gradient-to-b from-yellow-200 via-amber-300 to-yellow-600">
-          핑퐁드림어스
-        </h1>
+        {/* 제목 */}
+        <div className="text-center">
 
-        <p className="mt-2 text-2xl font-bold text-amber-200">
-          주문 시스템
-        </p>
+          <h1 className="bg-gradient-to-b from-yellow-100 via-[#f6d365] to-[#b8860b] bg-clip-text text-5xl font-black tracking-wide text-transparent">
+            핑퐁드림어스
+          </h1>
 
-        <div className="my-6 flex items-center gap-3">
-          <div className="h-px flex-1 bg-yellow-500/25" />
-          <span className="text-yellow-500/70">◆</span>
-          <div className="h-px flex-1 bg-yellow-500/25" />
+          <p className="mt-3 text-xl font-semibold tracking-[0.25em] text-yellow-500/70">
+            ORDER SYSTEM
+          </p>
+
         </div>
 
-        <p className="mb-4 text-sm text-slate-300">
+        {/* 라인 */}
+        <div className="my-8 flex items-center gap-3">
+          <div className="h-px flex-1 bg-yellow-500/15" />
+          <span className="text-yellow-500/40">◆</span>
+          <div className="h-px flex-1 bg-yellow-500/15" />
+        </div>
+
+        {/* 설명 */}
+        <p className="mb-4 text-center text-sm text-slate-400">
           비밀번호를 입력해주세요
         </p>
 
+        {/* 입력 */}
         <input
           type="password"
           value={passwordInput}
           onChange={(e) => setPasswordInput(e.target.value)}
-          placeholder="비밀번호"
-          className="w-full rounded-2xl border border-yellow-500/30 bg-[#070707]/90 px-4 py-4 text-center text-lg font-bold text-yellow-100 outline-none placeholder:text-slate-500 focus:border-yellow-400 focus:ring-2 focus:ring-yellow-500/20"
+          placeholder="PASSWORD"
+          className="w-full rounded-xl border border-yellow-500/20 bg-black/70 px-5 py-4 text-center text-lg font-bold tracking-[0.2em] text-yellow-100 outline-none placeholder:text-slate-600 focus:border-yellow-400 focus:ring-2 focus:ring-yellow-500/10"
         />
 
+        {/* 에러 */}
         {loginError && (
           <p className="mt-3 text-center text-sm font-bold text-rose-400">
             {loginError}
           </p>
         )}
 
+        {/* 버튼 */}
         <button
           type="submit"
-          className="mt-5 w-full rounded-2xl bg-gradient-to-r from-yellow-300 via-amber-400 to-yellow-600 px-4 py-4 font-black text-black shadow-lg shadow-yellow-500/20 transition active:scale-95"
+          className="mt-6 w-full rounded-xl bg-gradient-to-r from-[#f6d365] via-[#d4a017] to-[#b8860b] px-5 py-4 text-lg font-black tracking-wide text-black shadow-lg shadow-yellow-500/10 transition hover:scale-[1.01] active:scale-95"
         >
           로그인
         </button>
+
       </form>
     </main>
   );
