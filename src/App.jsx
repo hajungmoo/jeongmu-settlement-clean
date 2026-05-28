@@ -344,7 +344,7 @@ export default function App() {
             로그인
           </button>
 
-          <p className="mt-4 text-center text-xs text-slate-400">기본 비밀번호: pingpong1234</p>
+          <p className="mt-4 text-center text-xs text-slate-400">기본 비밀번호: 비밀 </p>
         </form>
       </main>
     );
