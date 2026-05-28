@@ -657,7 +657,7 @@ function ProductPage({ products, newProduct, setNewProduct, addProduct, updatePr
                   type="number"
                   value={product.buyPrice}
                   onChange={(e) => updateProduct(product.id, "buyPrice", e.target.value)}
-                  className="mt-1 w-full rounded-2xl border border-slate-700 bg-[#1a2336] text-slate-100 px-3 py-3 text-slate-900 outline-none focus:border-violet-400"
+                  className="mt-1 w-full rounded-2xl border border-slate-700 bg-[#1a2336] text-slate-100 px-3 py-3 text-white outline-none focus:border-violet-400"
                 />
               </label>
               <label className="text-xs font-bold text-slate-500">
@@ -666,7 +666,7 @@ function ProductPage({ products, newProduct, setNewProduct, addProduct, updatePr
                   type="number"
                   value={product.sellPrice}
                   onChange={(e) => updateProduct(product.id, "sellPrice", e.target.value)}
-                  className="mt-1 w-full rounded-2xl border border-slate-700 bg-[#1a2336] text-slate-100 px-3 py-3 text-slate-900 outline-none focus:border-violet-400"
+                  className="mt-1 w-full rounded-2xl border border-slate-700 bg-[#1a2336] text-slate-100 px-3 py-3 text-white outline-none focus:border-violet-400"
                 />
               </label>
             </div>
