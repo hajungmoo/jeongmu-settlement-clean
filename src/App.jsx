@@ -1,6 +1,7 @@
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 
 const today = () => new Date().toISOString().slice(0, 10);
+const storageKey = "jeongmu-settlement-basic-v1";
 
 function won(value) {
   return Number(value || 0).toLocaleString("ko-KR") + "원";
@@ -13,6 +14,33 @@ function koreanDate(value) {
 
 export default function App() {
   const [orders, setOrders] = useState([]);
+  const [savedText, setSavedText] = useState("저장 준비");
+
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem(storageKey);
+      if (saved) {
+        const data = JSON.parse(saved);
+        if (Array.isArray(data.orders)) setOrders(data.orders);
+      }
+      setSavedText("자동 저장");
+    } catch (error) {
+      console.error("저장 데이터 불러오기 실패", error);
+      setSavedText("불러오기 실패");
+    }
+  }, []);
+
+  useEffect(() => {
+    try {
+      localStorage.setItem(storageKey, JSON.stringify({ orders }));
+      setSavedText("저장됨");
+      const timer = setTimeout(() => setSavedText("자동 저장"), 1000);
+      return () => clearTimeout(timer);
+    } catch (error) {
+      console.error("자동 저장 실패", error);
+      setSavedText("저장 실패");
+    }
+  }, [orders]);
 
   function addOrder() {
     setOrders((prev) => [
@@ -77,7 +105,7 @@ export default function App() {
           <div className="mt-2 flex items-center justify-between gap-3">
             <div>
               <h1 className="text-2xl font-black">정무의 정산앱</h1>
-              <p className="text-sm text-slate-500">1단계: 정산 추가 기능</p>
+              <p className="text-sm text-slate-500">2단계: 자동 저장 적용 · {savedText}</p>
             </div>
             <button
               onClick={addOrder}
