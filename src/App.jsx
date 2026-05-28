@@ -1,6 +1,31 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { supabase } from "./supabase.js";
+function downloadBackup(orders, products) {
+  const backupData = {
+    orders,
+    products,
+    backupDate: new Date().toISOString(),
+  };
 
+  const blob = new Blob(
+    [JSON.stringify(backupData, null, 2)],
+    {
+      type: "application/json",
+    }
+  );
+
+  const url = URL.createObjectURL(blob);
+
+  const a = document.createElement("a");
+
+  a.href = url;
+
+  a.download = `pingpong-backup-${Date.now()}.json`;
+
+  a.click();
+
+  URL.revokeObjectURL(url);
+}
 const today = () => new Date().toISOString().slice(0, 10);
 const storageKey = "jeongmu-settlement-tabs-v2";
 const loginStorageKey = "jeongmu-settlement-login-ok";
@@ -475,6 +500,12 @@ function SettlementPage({
           >
             엑셀 다운로드
           </button>
+          <button
+  onClick={() => downloadBackup(orders, products)}
+  className="rounded-2xl bg-purple-600 px-4 py-3 text-sm font-bold text-white shadow-lg hover:scale-105 transition"
+>
+  전체 백업
+</button>
         </div>
       </section>
 
