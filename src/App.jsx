@@ -4,7 +4,7 @@ import { supabase } from "./supabase.js";
 const today = () => new Date().toISOString().slice(0, 10);
 const storageKey = "jeongmu-settlement-tabs-v2";
 const loginStorageKey = "jeongmu-settlement-login-ok";
-const appPassword = "12345";
+const appPassword = "pingpong1234";
 const cloudRowId = "main";
 
 const defaultProducts = [
@@ -84,6 +84,41 @@ export default function App() {
     }
 
     loadCloudData();
+  }, []);
+
+  useEffect(() => {
+    const channel = supabase
+      .channel("app-data-live")
+      .on(
+        "postgres_changes",
+        {
+          event: "UPDATE",
+          schema: "public",
+          table: "app_data",
+          filter: `id=eq.${cloudRowId}`,
+        },
+        (payload) => {
+          const cloudData = payload.new?.data;
+          if (!cloudData) return;
+
+          if (Array.isArray(cloudData.orders)) setOrders(cloudData.orders);
+          if (Array.isArray(cloudData.products) && cloudData.products.length > 0) {
+            setProducts(cloudData.products);
+          }
+
+          setSavedText("실시간 반영됨");
+          setTimeout(() => setSavedText("자동 저장"), 1000);
+        }
+      )
+      .subscribe((status) => {
+        if (status === "SUBSCRIBED") {
+          setSavedText("실시간 연결됨");
+        }
+      });
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, []);
 
   useEffect(() => {
