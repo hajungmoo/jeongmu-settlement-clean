@@ -1,27 +1,21 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { supabase } from "./supabase.js";
-downloadBackup(calculatedOrders, products)
+function downloadBackup(orders, products) {
   const backupData = {
     orders,
     products,
     backupDate: new Date().toISOString(),
   };
 
-  const blob = new Blob(
-    [JSON.stringify(backupData, null, 2)],
-    {
-      type: "application/json",
-    }
-  );
+  const blob = new Blob([JSON.stringify(backupData, null, 2)], {
+    type: "application/json",
+  });
 
   const url = URL.createObjectURL(blob);
-
   const a = document.createElement("a");
 
   a.href = url;
-
   a.download = `pingpong-backup-${Date.now()}.json`;
-
   a.click();
 
   URL.revokeObjectURL(url);
