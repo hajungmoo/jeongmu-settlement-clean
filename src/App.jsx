@@ -188,6 +188,33 @@ export default function App() {
     setProducts((prev) => prev.filter((product) => product.id !== id));
   }
 
+  function downloadExcelCsv() {
+    const headers = ["날짜", "주문자", "용품명", "수량", "받는가격", "판매가격", "총받는가격", "총판매금액", "정산금"];
+    const rows = calculatedOrders.map((order) => [
+      koreanDate(order.date),
+      order.buyer || "",
+      order.productName || "",
+      order.qty || 0,
+      order.buyPrice || 0,
+      order.sellPrice || 0,
+      order.totalBuy || 0,
+      order.totalSell || 0,
+      order.profit || 0,
+    ]);
+    const summaryRows = [[], ["합계", "", "", "", "", "", totals.totalBuy, totals.totalSell, totals.profit]];
+    const escapeCsv = (value) => `"${String(value).replaceAll('"', '""')}"`;
+    const csvContent = [headers, ...rows, ...summaryRows]
+      .map((row) => row.map(escapeCsv).join(","))
+      .join(String.fromCharCode(10));
+    const blob = new Blob(["\ufeff" + csvContent], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `핑퐁드림어스_정산파일_${today()}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+
   return (
     <main className="min-h-screen bg-[radial-gradient(circle_at_top_left,_#ede9fe,_transparent_35%),radial-gradient(circle_at_top_right,_#dbeafe,_transparent_35%),linear-gradient(135deg,_#faf5ff,_#f0f9ff,_#ecfdf5)] pb-28 text-slate-900">
       <div className="mx-auto max-w-5xl space-y-5 p-4">
@@ -238,6 +265,7 @@ export default function App() {
             parseBulkOrders={parseBulkOrders}
             updateOrder={updateOrder}
             deleteOrder={deleteOrder}
+            downloadExcelCsv={downloadExcelCsv}
           />
         ) : (
           <ProductPage
@@ -273,6 +301,7 @@ function SettlementPage({
   parseBulkOrders,
   updateOrder,
   deleteOrder,
+  downloadExcelCsv,
 }) {
   const placeholderText =
     "예시" +
@@ -289,6 +318,21 @@ function SettlementPage({
         <SummaryCard title="총 받는금액" value={won(totals.totalBuy)} />
         <SummaryCard title="총 판매금액" value={won(totals.totalSell)} />
         <SummaryCard title="총 정산금" value={won(totals.profit)} highlight />
+      </section>
+
+      <section className="rounded-[1.7rem] border border-white/80 bg-white/90 p-4 shadow-xl shadow-violet-100/70 backdrop-blur">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <h2 className="text-lg font-black">엑셀 다운로드</h2>
+            <p className="text-xs text-slate-500">현재 정산 내역을 CSV 파일로 저장합니다.</p>
+          </div>
+          <button
+            onClick={downloadExcelCsv}
+            className="rounded-2xl bg-gradient-to-r from-emerald-500 to-cyan-500 px-5 py-3 font-black text-white shadow-lg shadow-emerald-200 transition hover:scale-[1.01] active:scale-95"
+          >
+            엑셀 다운로드
+          </button>
+        </div>
       </section>
 
       <section className="rounded-[1.7rem] border border-white/80 bg-white/90 p-4 shadow-xl shadow-violet-100/70 backdrop-blur">
