@@ -24,9 +24,7 @@ function normalizeName(text) {
 
 function splitLines(text) {
   return String(text || "")
-    .split(/
-?
-/)
+    .split(String.fromCharCode(10))
     .map((line) => line.trim())
     .filter(Boolean);
 }
