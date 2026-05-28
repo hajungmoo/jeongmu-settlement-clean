@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 
 const today = () => new Date().toISOString().slice(0, 10);
-const storageKey = "jeongmu-settlement-tabs-v1";
+const storageKey = "jeongmu-settlement-tabs-v2";
 
 const defaultProducts = [
   { id: 1, name: "테너지05", buyPrice: 63000, sellPrice: 0 },
@@ -77,15 +77,7 @@ export default function App() {
       const sellPrice = Number(product.sellPrice || 0);
       const totalBuy = buyPrice * qty;
       const totalSell = sellPrice * qty;
-
-      return {
-        ...order,
-        buyPrice,
-        sellPrice,
-        totalBuy,
-        totalSell,
-        profit: totalSell - totalBuy,
-      };
+      return { ...order, buyPrice, sellPrice, totalBuy, totalSell, profit: totalSell - totalBuy };
     });
   }, [orders, productMap]);
 
@@ -110,13 +102,7 @@ export default function App() {
 
   function addOrder(productName = products[0]?.name || "") {
     setOrders((prev) => [
-      {
-        id: Date.now(),
-        date: today(),
-        buyer: "",
-        productName,
-        qty: 1,
-      },
+      { id: Date.now(), date: today(), buyer: "", productName, qty: 1 },
       ...prev,
     ]);
     setTab("settlement");
@@ -167,12 +153,7 @@ export default function App() {
   function updateOrder(id, key, value) {
     setOrders((prev) =>
       prev.map((order) =>
-        order.id === id
-          ? {
-              ...order,
-              [key]: key === "qty" ? Number(value || 0) : value,
-            }
-          : order
+        order.id === id ? { ...order, [key]: key === "qty" ? Number(value || 0) : value } : order
       )
     );
   }
@@ -183,7 +164,6 @@ export default function App() {
 
   function addProduct() {
     if (!newProduct.name.trim()) return;
-
     setProducts((prev) => [
       ...prev,
       {
@@ -193,19 +173,13 @@ export default function App() {
         sellPrice: Number(newProduct.sellPrice || 0),
       },
     ]);
-
     setNewProduct({ name: "", buyPrice: "", sellPrice: "" });
   }
 
   function updateProduct(id, key, value) {
     setProducts((prev) =>
       prev.map((product) =>
-        product.id === id
-          ? {
-              ...product,
-              [key]: key === "name" ? value : Number(value || 0),
-            }
-          : product
+        product.id === id ? { ...product, [key]: key === "name" ? value : Number(value || 0) } : product
       )
     );
   }
@@ -215,23 +189,38 @@ export default function App() {
   }
 
   return (
-    <main className="min-h-screen bg-slate-100 pb-24 text-slate-900">
-      <div className="mx-auto max-w-5xl space-y-4 p-4">
-        <header className="rounded-3xl bg-white p-5 shadow-sm">
-          <p className="text-sm font-bold text-violet-600">{koreanDate(today())}</p>
-          <div className="mt-2 flex items-center justify-between gap-3">
-            <div>
-              <h1 className="text-3xl font-black tracking-tight text-violet-700">
-  핑퐁드림어스 정산파일
-</h1>
-              <p className="text-sm text-slate-500">용품관리 연결됨 · {savedText}</p>
+    <main className="min-h-screen bg-gradient-to-br from-violet-50 via-slate-100 to-blue-50 pb-28 text-slate-900">
+      <div className="mx-auto max-w-5xl space-y-5 p-4">
+        <header className="relative overflow-hidden rounded-[2rem] bg-gradient-to-br from-violet-700 via-indigo-700 to-slate-900 p-6 text-white shadow-xl shadow-violet-200">
+          <div className="absolute -right-12 -top-12 h-40 w-40 rounded-full bg-white/10 blur-2xl" />
+          <div className="absolute -bottom-16 -left-16 h-48 w-48 rounded-full bg-violet-300/20 blur-3xl" />
+
+          <div className="relative z-10">
+            <div className="mb-4 flex items-center justify-between gap-3">
+              <span className="rounded-full bg-white/15 px-3 py-1 text-xs font-bold text-violet-100 backdrop-blur">
+                {koreanDate(today())}
+              </span>
+              <span className="rounded-full bg-emerald-400/20 px-3 py-1 text-xs font-bold text-emerald-100">
+                {savedText}
+              </span>
             </div>
-            <button
-              onClick={() => addOrder()}
-              className="rounded-2xl bg-violet-600 px-5 py-3 font-black text-white shadow-lg shadow-violet-200"
-            >
-              + 정산 추가
-            </button>
+
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+              <div>
+                <p className="text-sm font-bold text-violet-200">Pingpong Dreamus</p>
+                <h1 className="mt-1 text-3xl font-black tracking-tight sm:text-4xl">
+                  핑퐁드림어스 정산파일
+                </h1>
+                <p className="mt-2 text-sm text-violet-100">용품 주문 · 정산 · 가격 관리를 한 번에</p>
+              </div>
+
+              <button
+                onClick={() => addOrder()}
+                className="rounded-2xl bg-white px-5 py-3 font-black text-violet-700 shadow-lg shadow-black/20 transition hover:scale-[1.02] active:scale-95"
+              >
+                + 정산 추가
+              </button>
+            </div>
           </div>
         </header>
 
@@ -261,7 +250,7 @@ export default function App() {
         )}
       </div>
 
-      <nav className="fixed bottom-0 left-0 right-0 border-t border-slate-200 bg-white/95 p-3 backdrop-blur">
+      <nav className="fixed bottom-0 left-0 right-0 border-t border-white/60 bg-white/85 p-3 shadow-2xl backdrop-blur-xl">
         <div className="mx-auto grid max-w-md grid-cols-2 gap-2">
           <TabButton active={tab === "settlement"} onClick={() => setTab("settlement")} label="정산" />
           <TabButton active={tab === "products"} onClick={() => setTab("products")} label="용품관리" />
@@ -284,6 +273,15 @@ function SettlementPage({
   updateOrder,
   deleteOrder,
 }) {
+  const placeholderText =
+    "예시" +
+    String.fromCharCode(10) +
+    "테너지05 2장" +
+    String.fromCharCode(10) +
+    "테너지64 2장" +
+    String.fromCharCode(10) +
+    "MXP 4개";
+
   return (
     <>
       <section className="grid grid-cols-1 gap-3 sm:grid-cols-3">
@@ -292,40 +290,37 @@ function SettlementPage({
         <SummaryCard title="총 정산금" value={won(totals.profit)} highlight />
       </section>
 
-      <section className="rounded-3xl bg-white p-4 shadow-sm">
+      <section className="rounded-[1.7rem] border border-white/70 bg-white/90 p-4 shadow-lg shadow-slate-200/70 backdrop-blur">
         <h2 className="mb-3 text-lg font-black">대량 입력 자동정리</h2>
         <div className="space-y-2">
           <input
             value={bulkBuyer}
             onChange={(e) => setBulkBuyer(e.target.value)}
             placeholder="주문자명, 비워도 됨"
-            className="w-full rounded-2xl border border-slate-200 bg-white px-3 py-3 outline-none"
+            className="w-full rounded-2xl border border-slate-200 bg-white px-3 py-3 outline-none focus:border-violet-400 focus:ring-2 focus:ring-violet-100"
           />
-        <textarea
-  value={bulkText}
-  onChange={(e) => setBulkText(e.target.value)}
-  placeholder={"예시" + String.fromCharCode(10) + "테너지05 2장" + String.fromCharCode(10) + "테너지64 2장" + String.fromCharCode(10) + "MXP 4개"}
-  rows={5}
-  className="w-full resize-none rounded-2xl border border-slate-200 bg-white px-3 py-3 outline-none"
-/>
+          <textarea
+            value={bulkText}
+            onChange={(e) => setBulkText(e.target.value)}
+            placeholder={placeholderText}
             rows={5}
-            className="w-full resize-none rounded-2xl border border-slate-200 bg-white px-3 py-3 outline-none"
+            className="w-full resize-none rounded-2xl border border-slate-200 bg-white px-3 py-3 outline-none focus:border-violet-400 focus:ring-2 focus:ring-violet-100"
           />
           <button
             onClick={parseBulkOrders}
-            className="w-full rounded-2xl bg-violet-600 px-4 py-3 font-black text-white"
+            className="w-full rounded-2xl bg-gradient-to-r from-violet-600 to-indigo-600 px-4 py-3 font-black text-white shadow-lg shadow-violet-200 transition hover:scale-[1.01] active:scale-95"
           >
             자동으로 정산 추가
           </button>
         </div>
       </section>
 
-      <section className="rounded-3xl bg-white p-4 shadow-sm">
+      <section className="rounded-[1.7rem] border border-white/70 bg-white/90 p-4 shadow-lg shadow-slate-200/70 backdrop-blur">
         <div className="mb-3 flex items-center justify-between gap-3">
           <h2 className="text-lg font-black">정산 내역</h2>
           <button
             onClick={() => addOrder()}
-            className="rounded-2xl bg-slate-900 px-4 py-2 text-sm font-bold text-white"
+            className="rounded-2xl bg-slate-900 px-4 py-2 text-sm font-bold text-white shadow-md transition active:scale-95"
           >
             추가
           </button>
@@ -338,17 +333,17 @@ function SettlementPage({
         ) : (
           <div className="space-y-3">
             {calculatedOrders.map((order) => (
-              <article key={order.id} className="rounded-3xl border border-slate-100 bg-slate-50 p-4">
+              <article key={order.id} className="rounded-[1.7rem] border border-slate-100 bg-gradient-to-br from-white to-slate-50 p-4 shadow-sm">
                 <div className="mb-3 flex items-center justify-between gap-2">
                   <input
                     type="date"
                     value={order.date}
                     onChange={(e) => updateOrder(order.id, "date", e.target.value)}
-                    className="rounded-2xl border border-slate-200 bg-white px-3 py-2 text-sm outline-none"
+                    className="rounded-2xl border border-slate-200 bg-white px-3 py-2 text-sm outline-none focus:border-violet-400"
                   />
                   <button
                     onClick={() => deleteOrder(order.id)}
-                    className="rounded-2xl bg-rose-100 px-3 py-2 text-sm font-bold text-rose-600"
+                    className="rounded-2xl bg-rose-100 px-3 py-2 text-sm font-bold text-rose-600 transition hover:bg-rose-200 active:scale-95"
                   >
                     삭제
                   </button>
@@ -359,12 +354,12 @@ function SettlementPage({
                     value={order.buyer}
                     onChange={(e) => updateOrder(order.id, "buyer", e.target.value)}
                     placeholder="주문자"
-                    className="rounded-2xl border border-slate-200 bg-white px-3 py-3 outline-none"
+                    className="rounded-2xl border border-slate-200 bg-white px-3 py-3 outline-none focus:border-violet-400 focus:ring-2 focus:ring-violet-100"
                   />
                   <select
                     value={order.productName}
                     onChange={(e) => updateOrder(order.id, "productName", e.target.value)}
-                    className="rounded-2xl border border-slate-200 bg-white px-3 py-3 outline-none"
+                    className="rounded-2xl border border-slate-200 bg-white px-3 py-3 outline-none focus:border-violet-400 focus:ring-2 focus:ring-violet-100"
                   >
                     <option value="">용품 선택</option>
                     {products.map((product) => (
@@ -378,7 +373,7 @@ function SettlementPage({
                     value={order.qty}
                     onChange={(e) => updateOrder(order.id, "qty", e.target.value)}
                     placeholder="수량"
-                    className="rounded-2xl border border-slate-200 bg-white px-3 py-3 outline-none"
+                    className="rounded-2xl border border-slate-200 bg-white px-3 py-3 outline-none focus:border-violet-400 focus:ring-2 focus:ring-violet-100"
                   />
                 </div>
 
@@ -400,7 +395,7 @@ function SettlementPage({
 
 function ProductPage({ products, newProduct, setNewProduct, addProduct, updateProduct, deleteProduct }) {
   return (
-    <section className="rounded-3xl bg-white p-4 shadow-sm">
+    <section className="rounded-[1.7rem] border border-white/70 bg-white/90 p-4 shadow-lg shadow-slate-200/70 backdrop-blur">
       <h2 className="mb-3 text-lg font-black">용품관리</h2>
 
       <div className="mb-4 grid grid-cols-1 gap-2 sm:grid-cols-[1fr_0.7fr_0.7fr_auto]">
@@ -408,39 +403,42 @@ function ProductPage({ products, newProduct, setNewProduct, addProduct, updatePr
           value={newProduct.name}
           onChange={(e) => setNewProduct({ ...newProduct, name: e.target.value })}
           placeholder="용품명"
-          className="rounded-2xl border border-slate-200 bg-white px-3 py-3 outline-none"
+          className="rounded-2xl border border-slate-200 bg-white px-3 py-3 outline-none focus:border-violet-400 focus:ring-2 focus:ring-violet-100"
         />
         <input
           type="number"
           value={newProduct.buyPrice}
           onChange={(e) => setNewProduct({ ...newProduct, buyPrice: e.target.value })}
           placeholder="받는가격"
-          className="rounded-2xl border border-slate-200 bg-white px-3 py-3 outline-none"
+          className="rounded-2xl border border-slate-200 bg-white px-3 py-3 outline-none focus:border-violet-400 focus:ring-2 focus:ring-violet-100"
         />
         <input
           type="number"
           value={newProduct.sellPrice}
           onChange={(e) => setNewProduct({ ...newProduct, sellPrice: e.target.value })}
           placeholder="판매가격"
-          className="rounded-2xl border border-slate-200 bg-white px-3 py-3 outline-none"
+          className="rounded-2xl border border-slate-200 bg-white px-3 py-3 outline-none focus:border-violet-400 focus:ring-2 focus:ring-violet-100"
         />
-        <button onClick={addProduct} className="rounded-2xl bg-violet-600 px-4 py-3 font-black text-white">
+        <button
+          onClick={addProduct}
+          className="rounded-2xl bg-gradient-to-r from-violet-600 to-indigo-600 px-4 py-3 font-black text-white shadow-lg shadow-violet-200 transition hover:scale-[1.01] active:scale-95"
+        >
           추가
         </button>
       </div>
 
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
         {products.map((product) => (
-          <article key={product.id} className="rounded-3xl border border-slate-100 bg-slate-50 p-4">
+          <article key={product.id} className="rounded-[1.7rem] border border-slate-100 bg-gradient-to-br from-white to-slate-50 p-4 shadow-sm">
             <div className="mb-3 flex items-center gap-2">
               <input
                 value={product.name}
                 onChange={(e) => updateProduct(product.id, "name", e.target.value)}
-                className="w-full rounded-2xl border border-slate-200 bg-white px-3 py-3 font-bold outline-none"
+                className="w-full rounded-2xl border border-slate-200 bg-white px-3 py-3 font-bold outline-none focus:border-violet-400"
               />
               <button
                 onClick={() => deleteProduct(product.id)}
-                className="rounded-2xl bg-rose-100 px-3 py-3 text-sm font-bold text-rose-600"
+                className="rounded-2xl bg-rose-100 px-3 py-3 text-sm font-bold text-rose-600 transition hover:bg-rose-200 active:scale-95"
               >
                 삭제
               </button>
@@ -452,7 +450,7 @@ function ProductPage({ products, newProduct, setNewProduct, addProduct, updatePr
                   type="number"
                   value={product.buyPrice}
                   onChange={(e) => updateProduct(product.id, "buyPrice", e.target.value)}
-                  className="mt-1 w-full rounded-2xl border border-slate-200 bg-white px-3 py-3 text-slate-900 outline-none"
+                  className="mt-1 w-full rounded-2xl border border-slate-200 bg-white px-3 py-3 text-slate-900 outline-none focus:border-violet-400"
                 />
               </label>
               <label className="text-xs font-bold text-slate-500">
@@ -461,7 +459,7 @@ function ProductPage({ products, newProduct, setNewProduct, addProduct, updatePr
                   type="number"
                   value={product.sellPrice}
                   onChange={(e) => updateProduct(product.id, "sellPrice", e.target.value)}
-                  className="mt-1 w-full rounded-2xl border border-slate-200 bg-white px-3 py-3 text-slate-900 outline-none"
+                  className="mt-1 w-full rounded-2xl border border-slate-200 bg-white px-3 py-3 text-slate-900 outline-none focus:border-violet-400"
                 />
               </label>
             </div>
@@ -474,7 +472,7 @@ function ProductPage({ products, newProduct, setNewProduct, addProduct, updatePr
 
 function SummaryCard({ title, value, highlight }) {
   return (
-    <div className={`rounded-3xl p-4 shadow-sm ${highlight ? "bg-violet-600 text-white" : "bg-white"}`}>
+    <div className={`rounded-[1.7rem] p-5 shadow-lg ${highlight ? "bg-gradient-to-br from-violet-600 to-indigo-700 text-white shadow-violet-200" : "border border-white/70 bg-white/90 shadow-slate-200/70"}`}>
       <p className={`text-xs font-bold ${highlight ? "text-violet-100" : "text-slate-500"}`}>{title}</p>
       <p className="mt-1 text-xl font-black">{value}</p>
     </div>
@@ -494,8 +492,8 @@ function TabButton({ active, onClick, label }) {
   return (
     <button
       onClick={onClick}
-      className={`rounded-2xl px-4 py-3 text-sm font-black ${
-        active ? "bg-violet-600 text-white shadow-lg shadow-violet-200" : "bg-slate-100 text-slate-500"
+      className={`rounded-2xl px-4 py-3 text-sm font-black transition ${
+        active ? "bg-gradient-to-r from-violet-600 to-indigo-600 text-white shadow-lg shadow-violet-200" : "bg-slate-100 text-slate-500 hover:bg-slate-200"
       }`}
     >
       {label}
