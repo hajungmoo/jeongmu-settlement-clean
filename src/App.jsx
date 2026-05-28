@@ -561,12 +561,12 @@ function SettlementPage({
                     value={order.buyer}
                     onChange={(e) => updateOrder(order.id, "buyer", e.target.value)}
                     placeholder="주문자"
-                    className="rounded-2xl border border-slate-700 bg-[#1a2336] text-slate-100 px-3 py-3 outline-none focus:border-violet-400 focus:ring-2 focus:ring-violet-100"
+                    className="rounded-2xl border border-slate-700 bg-[#1a2336] text-slate-100 px-3 py-3 placeholder:text-slate-500 focus:border-violet-400 focus:ring-2 focus:ring-violet-100"
                   />
                   <select
                     value={order.productName}
                     onChange={(e) => updateOrder(order.id, "productName", e.target.value)}
-                    className="rounded-2xl border border-slate-700 bg-[#1a2336] text-slate-100 px-3 py-3 outline-none focus:border-violet-400 focus:ring-2 focus:ring-violet-100"
+                    className="rounded-2xl border border-slate-700 bg-[#1a2336] text-slate-100 px-3 py-3 placeholder:text-slate-500 focus:border-violet-400 focus:ring-2 focus:ring-violet-100"
                   >
                     <option value="">용품 선택</option>
                     {products.map((product) => (
@@ -580,7 +580,7 @@ function SettlementPage({
                     value={order.qty}
                     onChange={(e) => updateOrder(order.id, "qty", e.target.value)}
                     placeholder="수량"
-                    className="rounded-2xl border border-slate-700 bg-[#1a2336] text-slate-100 px-3 py-3 outline-none focus:border-violet-400 focus:ring-2 focus:ring-violet-100"
+                    className="rounded-2xl border border-slate-700 bg-[#1a2336] text-slate-100 px-3 py-3 placeholder:text-slate-500 focus:border-violet-400 focus:ring-2 focus:ring-violet-100"
                   />
                 </div>
 
@@ -610,21 +610,21 @@ function ProductPage({ products, newProduct, setNewProduct, addProduct, updatePr
           value={newProduct.name}
           onChange={(e) => setNewProduct({ ...newProduct, name: e.target.value })}
           placeholder="용품명"
-          className="rounded-2xl border border-slate-700 bg-[#1a2336] text-slate-100 px-3 py-3 outline-none focus:border-violet-400 focus:ring-2 focus:ring-violet-100"
+          className="rounded-2xl border border-slate-700 bg-[#1a2336] text-slate-100 px-3 py-3 placeholder:text-slate-500 focus:border-violet-400 focus:ring-2 focus:ring-violet-100"
         />
         <input
           type="number"
           value={newProduct.buyPrice}
           onChange={(e) => setNewProduct({ ...newProduct, buyPrice: e.target.value })}
           placeholder="받는가격"
-          className="rounded-2xl border border-slate-700 bg-[#1a2336] text-slate-100 px-3 py-3 outline-none focus:border-violet-400 focus:ring-2 focus:ring-violet-100"
+          className="rounded-2xl border border-slate-700 bg-[#1a2336] text-slate-100 px-3 py-3 placeholder:text-slate-500 focus:border-violet-400 focus:ring-2 focus:ring-violet-100"
         />
         <input
           type="number"
           value={newProduct.sellPrice}
           onChange={(e) => setNewProduct({ ...newProduct, sellPrice: e.target.value })}
           placeholder="판매가격"
-          className="rounded-2xl border border-slate-700 bg-[#1a2336] text-slate-100 px-3 py-3 outline-none focus:border-violet-400 focus:ring-2 focus:ring-violet-100"
+          className="rounded-2xl border border-slate-700 bg-[#1a2336] text-slate-100 px-3 py-3 placeholder:text-slate-500 focus:border-violet-400 focus:ring-2 focus:ring-violet-100"
         />
         <button
           onClick={addProduct}
