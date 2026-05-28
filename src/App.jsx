@@ -424,86 +424,151 @@ if (!isUnlocked) {
   );
 }
 
-  return (
-    <main className="min-h-screen bg-[radial-gradient(circle_at_top_left,_#7c3aed55,_transparent_32%),radial-gradient(circle_at_top_right,_#06b6d455,_transparent_30%),radial-gradient(circle_at_bottom,_#ec489955,_transparent_35%),linear-gradient(135deg,_#020617,_#111827,_#1e1b4b)] pb-28 text-slate-100">
-      <div className="mx-auto max-w-5xl space-y-5 p-4">
-       <header className="relative overflow-hidden rounded-[2rem] border border-slate-700 bg-gradient-to-br from-[#111827] via-[#172033] to-[#1e293b] p-6 text-slate-100 shadow-xl shadow-black/30">
-          <div className="absolute -right-16 -top-16 h-48 w-48 rounded-full bg-cyan-400/25 blur-3xl" />
-          <div className="absolute -bottom-20 -left-20 h-56 w-56 rounded-full bg-fuchsia-500/25 blur-3xl" />
-          <div className="absolute left-1/2 top-1/2 h-40 w-40 -translate-x-1/2 -translate-y-1/2 rounded-full bg-violet-400/20 blur-3xl" />
+return (
+  <main className="min-h-screen bg-[#050505] pb-28 text-slate-100">
 
-          <div className="relative z-10">
-            <div className="mb-4 flex items-center justify-between gap-3">
-              <span className="rounded-full border border-cyan-300/30 bg-cyan-300/10 px-3 py-1 text-xs font-bold text-cyan-100 shadow-sm backdrop-blur">
-                {koreanDate(today())}
-              </span>
-              <div className="flex gap-2">
-                <span className="rounded-full border border-emerald-300/30 bg-emerald-300/10 px-3 py-1 text-xs font-bold text-emerald-100 shadow-sm">
-                  {savedText}
-                </span>
-                <button
-                  onClick={handleLogout}
-                  className="rounded-full border border-white/15 bg-white/10 px-3 py-1 text-xs font-bold text-white shadow-sm backdrop-blur transition hover:bg-white/20"
-                >
-                  로그아웃
-                </button>
-              </div>
-            </div>
+    <div className="mx-auto max-w-7xl space-y-5 p-5">
 
-            <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-              <div>
-                <p className="inline-flex rounded-full border border-cyan-300/30 bg-cyan-300/10 px-3 py-1 text-sm font-bold text-cyan-100 backdrop-blur">Pingpong Dreamers</p>
-                <h1 className="mt-3 bg-gradient-to-r from-white via-cyan-100 to-fuchsia-200 bg-clip-text text-3xl font-black tracking-tight text-transparent drop-shadow-sm sm:text-4xl">
-                  핑퐁드림어스 정산파일
-                </h1>
-                <p className="mt-2 text-sm font-medium text-slate-300">용품 주문 · 정산 · 가격 관리를 한 번에</p>
-              </div>
+      {/* 헤더 */}
+      <header className="relative overflow-hidden rounded-[1.5rem] border border-[#d4a017]/20 bg-gradient-to-br from-[#111111] via-[#1a1a1a] to-[#050505] p-6 text-slate-100 shadow-[0_0_35px_rgba(212,160,23,0.12)]">
 
-              <button
-                onClick={() => addOrder()}
-                className="w-full rounded-2xl border border-slate-700 bg-white px-4 py-3 text-slate-900 outline-none"
-              >
-                + 정산 추가
-              </button>
-            </div>
-          </div>
-        </header>
-
-        {tab === "settlement" ? (
-          <SettlementPage
-            products={products}
-            calculatedOrders={calculatedOrders}
-            totals={totals}
-            addOrder={addOrder}
-            bulkBuyer={bulkBuyer}
-            setBulkBuyer={setBulkBuyer}
-            bulkText={bulkText}
-            setBulkText={setBulkText}
-            parseBulkOrders={parseBulkOrders}
-            updateOrder={updateOrder}
-            deleteOrder={deleteOrder}
-            downloadExcelCsv={downloadExcelCsv}
+        <div className="absolute inset-0 opacity-10">
+          <img
+            src="/dragon.png"
+            alt="dragon"
+            className="absolute right-[-120px] top-[-80px] w-[500px]"
           />
-        ) : (
-          <ProductPage
-            products={products}
-            newProduct={newProduct}
-            setNewProduct={setNewProduct}
-            addProduct={addProduct}
-            updateProduct={updateProduct}
-            deleteProduct={deleteProduct}
-          />
-        )}
-      </div>
-
-      <nav className="fixed bottom-0 left-0 right-0 border-t border-cyan-300/20 bg-slate-950/80 p-3 shadow-2xl backdrop-blur-xl">
-        <div className="mx-auto grid max-w-md grid-cols-2 gap-2">
-          <TabButton active={tab === "settlement"} onClick={() => setTab("settlement")} label="정산" />
-          <TabButton active={tab === "products"} onClick={() => setTab("products")} label="용품관리" />
         </div>
-      </nav>
-    </main>
-  );
+
+        <div className="relative z-10 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+
+          <div>
+
+            <p className="inline-flex rounded-full border border-[#d4a017]/30 bg-[#111111] px-3 py-1 text-sm font-bold text-yellow-400">
+              Pingpong Dreamers
+            </p>
+
+            <h1 className="mt-3 bg-gradient-to-b from-[#fff3b0] via-[#f6d365] to-[#b8860b] bg-clip-text text-4xl font-black tracking-wide text-transparent">
+              핑퐁드림어스 정산파일
+            </h1>
+
+            <p className="mt-2 text-sm font-medium text-slate-400">
+              ORDER MANAGEMENT SYSTEM
+            </p>
+
+          </div>
+
+          <button
+            onClick={() => addOrder()}
+            className="rounded-xl bg-gradient-to-r from-[#ffe27a] via-[#d4a017] to-[#8b6508] px-5 py-3 font-black text-[#111111] shadow-[0_0_40px_rgba(212,160,23,0.35)] transition hover:scale-[1.02] active:scale-95"
+          >
+            + 정산 추가
+          </button>
+
+        </div>
+      </header>
+
+      {/* 합계 */}
+      <section className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+
+        <div className="rounded-[1.4rem] border border-[#d4a017]/20 bg-[#0b0b0b]/90 p-5 shadow-[0_0_35px_rgba(212,160,23,0.12)]">
+          <p className="text-xs font-bold text-slate-500">
+            총 받는금액
+          </p>
+
+          <p className="mt-2 text-3xl font-black text-yellow-100">
+            {won(totals.totalBuy)}
+          </p>
+        </div>
+
+        <div className="rounded-[1.4rem] border border-[#d4a017]/20 bg-[#0b0b0b]/90 p-5 shadow-[0_0_35px_rgba(212,160,23,0.12)]">
+          <p className="text-xs font-bold text-slate-500">
+            총 판매금액
+          </p>
+
+          <p className="mt-2 text-3xl font-black text-yellow-100">
+            {won(totals.totalSell)}
+          </p>
+        </div>
+
+        <div className="rounded-[1.4rem] border border-[#d4a017]/30 bg-gradient-to-r from-[#ffe27a] via-[#d4a017] to-[#8b6508] p-5 shadow-[0_0_45px_rgba(212,160,23,0.28)]">
+
+          <p className="text-xs font-bold text-[#111111]/70">
+            총 정산금
+          </p>
+
+          <p className="mt-2 text-3xl font-black text-[#111111]">
+            {won(totals.profit)}
+          </p>
+
+        </div>
+
+      </section>
+
+      {/* 다운로드 */}
+      <section className="rounded-[1.4rem] border border-[#d4a017]/20 bg-[#0b0b0b]/90 p-5 shadow-[0_0_35px_rgba(212,160,23,0.12)]">
+
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+
+          <div>
+
+            <h2 className="text-lg font-black text-yellow-100">
+              엑셀 다운로드
+            </h2>
+
+            <p className="text-sm text-slate-500">
+              현재 정산 내역을 CSV 파일로 저장합니다.
+            </p>
+
+          </div>
+
+          <button
+            onClick={downloadExcelCsv}
+            className="rounded-xl bg-gradient-to-r from-[#ffe27a] via-[#d4a017] to-[#8b6508] px-5 py-3 font-black text-[#111111] shadow-[0_0_40px_rgba(212,160,23,0.35)] transition hover:scale-[1.02] active:scale-95"
+          >
+            엑셀 다운로드
+          </button>
+
+        </div>
+      </section>
+
+      {/* 자동 정리 */}
+      <section className="rounded-[1.4rem] border border-[#d4a017]/20 bg-[#0b0b0b]/90 p-5 shadow-[0_0_35px_rgba(212,160,23,0.12)]">
+
+        <h2 className="mb-4 text-xl font-black text-yellow-100">
+          대량 입력 자동정리
+        </h2>
+
+        <div className="space-y-3">
+
+          <input
+            value={bulkBuyer}
+            onChange={(e) => setBulkBuyer(e.target.value)}
+            placeholder="주문자명"
+            className="w-full rounded-xl border border-[#d4a017]/30 bg-white px-4 py-4 text-slate-900 outline-none placeholder:text-slate-500 focus:border-yellow-400"
+          />
+
+          <textarea
+            value={bulkText}
+            onChange={(e) => setBulkText(e.target.value)}
+            rows={6}
+            placeholder="예시&#10;테너지05 3장&#10;테너지64 3장"
+            className="w-full resize-none rounded-xl border border-[#d4a017]/30 bg-white px-4 py-4 text-slate-900 outline-none placeholder:text-slate-500 focus:border-yellow-400"
+          />
+
+          <button
+            onClick={parseBulkOrders}
+            className="w-full rounded-xl bg-gradient-to-r from-[#ffe27a] via-[#d4a017] to-[#8b6508] px-5 py-4 font-black text-[#111111] shadow-[0_0_40px_rgba(212,160,23,0.35)] transition hover:scale-[1.01] active:scale-95"
+          >
+            자동으로 정산 추가
+          </button>
+
+        </div>
+      </section>
+
+    </div>
+  </main>
+);
 }
 
 function SettlementPage({
