@@ -387,7 +387,7 @@ if (!isUnlocked) {
 
               <button
                 onClick={() => addOrder()}
-                className="rounded-2xl border border-cyan-300/40 bg-gradient-to-r from-cyan-400 via-violet-500 to-fuchsia-500 px-5 py-3 font-black text-white shadow-xl shadow-cyan-500/20 transition hover:scale-[1.02] active:scale-95"
+                className="w-full rounded-2xl border border-slate-700 bg-white px-4 py-3 text-slate-900 outline-none"
               >
                 + 정산 추가
               </button>
@@ -471,7 +471,7 @@ function SettlementPage({
           </div>
           <button
             onClick={downloadExcelCsv}
-            className="rounded-2xl bg-gradient-to-r from-emerald-500 to-cyan-500 px-5 py-3 font-black text-white shadow-lg shadow-emerald-200 transition hover:scale-[1.01] active:scale-95"
+            className="w-full rounded-2xl border border-slate-700 bg-white px-4 py-3 text-slate-900 outline-none"
           >
             엑셀 다운로드
           </button>
@@ -508,7 +508,7 @@ function SettlementPage({
           <h2 className="text-lg font-black">정산 내역</h2>
           <button
             onClick={() => addOrder()}
-            className="rounded-2xl bg-slate-900 px-4 py-2 text-sm font-bold text-white shadow-md transition active:scale-95"
+            className="w-full rounded-2xl border border-slate-700 bg-white px-4 py-3 text-slate-900 outline-none"
           >
             추가
           </button>
@@ -628,7 +628,7 @@ function ProductPage({ products, newProduct, setNewProduct, addProduct, updatePr
         />
         <button
           onClick={addProduct}
-          className="rounded-2xl bg-gradient-to-r from-violet-600 to-indigo-600 px-4 py-3 font-black text-white shadow-lg shadow-fuchsia-200 transition hover:scale-[1.01] active:scale-95"
+          className="w-full rounded-2xl border border-slate-700 bg-white px-4 py-3 text-slate-900 outline-none"
         >
           추가
         </button>
