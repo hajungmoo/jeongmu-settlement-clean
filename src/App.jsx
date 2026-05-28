@@ -283,7 +283,29 @@ function parseBulkOrders() {
     return;
   }
 
-  setOrders((prev) => [...parsed, ...prev]);
+  setOrders((prev) => {
+  const next = [...prev];
+
+  parsed.forEach((item) => {
+    const index = next.findIndex(
+      (order) =>
+        order.productName === item.productName &&
+        order.buyer === item.buyer &&
+        order.done === false
+    );
+
+    if (index >= 0) {
+      next[index] = {
+        ...next[index],
+        qty: Number(next[index].qty || 0) + Number(item.qty || 0),
+      };
+    } else {
+      next.unshift(item);
+    }
+  });
+
+  return next;
+});
   setBulkBuyer("");
   setBulkText("");
   setTab("settlement");
