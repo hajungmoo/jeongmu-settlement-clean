@@ -1,7 +1,9 @@
 import React, { useEffect, useMemo, useState } from "react";
+import { supabase } from "./supabase.js";
 
 const today = () => new Date().toISOString().slice(0, 10);
 const storageKey = "jeongmu-settlement-tabs-v2";
+const cloudRowId = "main";
 
 const defaultProducts = [
   { id: 1, name: "테너지05", buyPrice: 63000, sellPrice: 0 },
@@ -39,30 +41,67 @@ export default function App() {
   const [bulkText, setBulkText] = useState("");
 
   useEffect(() => {
-    try {
-      const saved = localStorage.getItem(storageKey);
-      if (saved) {
-        const data = JSON.parse(saved);
-        if (Array.isArray(data.orders)) setOrders(data.orders);
-        if (Array.isArray(data.products)) setProducts(data.products);
+    async function loadCloudData() {
+      try {
+        setSavedText("불러오는 중");
+
+        const { data, error } = await supabase
+          .from("app_data")
+          .select("data")
+          .eq("id", cloudRowId)
+          .single();
+
+        if (error) throw error;
+
+        if (data?.data) {
+          if (Array.isArray(data.data.orders)) setOrders(data.data.orders);
+          if (Array.isArray(data.data.products) && data.data.products.length > 0) {
+            setProducts(data.data.products);
+          }
+        }
+
+        setSavedText("클라우드 연결됨");
+      } catch (error) {
+        console.error("클라우드 불러오기 실패", error);
+        setSavedText("클라우드 실패 · 기기 저장");
+
+        try {
+          const saved = localStorage.getItem(storageKey);
+          if (saved) {
+            const localData = JSON.parse(saved);
+            if (Array.isArray(localData.orders)) setOrders(localData.orders);
+            if (Array.isArray(localData.products)) setProducts(localData.products);
+          }
+        } catch (localError) {
+          console.error("기기 저장 불러오기 실패", localError);
+        }
       }
-      setSavedText("자동 저장");
-    } catch (error) {
-      console.error("저장 데이터 불러오기 실패", error);
-      setSavedText("불러오기 실패");
     }
+
+    loadCloudData();
   }, []);
 
   useEffect(() => {
-    try {
-      localStorage.setItem(storageKey, JSON.stringify({ orders, products }));
-      setSavedText("저장됨");
-      const timer = setTimeout(() => setSavedText("자동 저장"), 1000);
-      return () => clearTimeout(timer);
-    } catch (error) {
-      console.error("자동 저장 실패", error);
-      setSavedText("저장 실패");
-    }
+    const timer = setTimeout(async () => {
+      try {
+        const payload = { orders, products };
+        localStorage.setItem(storageKey, JSON.stringify(payload));
+
+        const { error } = await supabase
+          .from("app_data")
+          .upsert({ id: cloudRowId, data: payload, updated_at: new Date().toISOString() });
+
+        if (error) throw error;
+
+        setSavedText("클라우드 저장됨");
+        setTimeout(() => setSavedText("자동 저장"), 1000);
+      } catch (error) {
+        console.error("클라우드 저장 실패", error);
+        setSavedText("기기 저장됨 · 클라우드 실패");
+      }
+    }, 700);
+
+    return () => clearTimeout(timer);
   }, [orders, products]);
 
   const productMap = useMemo(() => {
