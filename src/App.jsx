@@ -343,10 +343,10 @@ if (!isUnlocked) {
       {/* 배경 */}
       <div className="pointer-events-none absolute inset-0">
         
-        <img
+       <img
   src="/dragon.png"
   alt="dragon"
-  className="absolute left-1/2 top-1/2 w-[1400px] -translate-x-1/2 -translate-y-1/2 opacity-45 select-none"
+  className="absolute left-1/2 top-1/2 w-[2200px] max-w-none -translate-x-1/2 -translate-y-1/2 opacity-80 mix-blend-screen select-none"
 />
         {/* 황금 용 느낌 */}
         <div className="absolute left-1/2 top-1/2 h-[760px] w-[760px] -translate-x-1/2 -translate-y-1/2 rounded-full border border-yellow-500/10 shadow-[0_0_180px_rgba(245,158,11,0.18)]" />
