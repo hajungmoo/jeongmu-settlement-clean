@@ -344,8 +344,8 @@ if (!isUnlocked) {
       <div className="pointer-events-none absolute inset-0">
         
          {/* 용 한자 */}
-  <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 text-[420px] font-black text-yellow-500/5 rotate-[-12deg] select-none blur-[1px]">
-    龍
+ <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 text-[520px] font-black text-yellow-500/20 rotate-[-12deg] select-none blur-[1px]">
+  龍
 </div>
        
         {/* 황금 용 느낌 */}
