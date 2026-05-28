@@ -322,7 +322,7 @@ export default function App() {
           className="w-full max-w-sm rounded-[2rem] border border-white/80 bg-white/90 p-6 shadow-2xl shadow-violet-200/70 backdrop-blur"
         >
           <div className="mb-5 text-center">
-            <p className="text-sm font-bold text-violet-600">Pingpong Dreamus</p>
+            <p className="text-sm font-bold text-violet-600">Pingpong Dreamers</p>
             <h1 className="mt-1 text-2xl font-black text-slate-900">핑퐁드림어스 정산파일</h1>
             <p className="mt-2 text-sm text-slate-500">비밀번호를 입력하면 정산앱에 들어갈 수 있습니다.</p>
           </div>
@@ -378,7 +378,7 @@ export default function App() {
 
             <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
               <div>
-                <p className="inline-flex rounded-full bg-white/15 px-3 py-1 text-sm font-bold text-yellow-100 backdrop-blur">Pingpong Dreamus</p>
+                <p className="inline-flex rounded-full bg-white/15 px-3 py-1 text-sm font-bold text-yellow-100 backdrop-blur">Pingpong Dreamers</p>
                 <h1 className="mt-3 text-3xl font-black tracking-tight drop-shadow-sm sm:text-4xl">
                   핑퐁드림어스 정산파일
                 </h1>
