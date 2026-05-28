@@ -299,13 +299,13 @@ function SettlementPage({
             placeholder="주문자명, 비워도 됨"
             className="w-full rounded-2xl border border-slate-200 bg-white px-3 py-3 outline-none"
           />
-          <textarea
-            value={bulkText}
-            onChange={(e) => setBulkText(e.target.value)}
-            placeholder={"예시
-테너지05 2장
-테너지64 2장
-MXP 4개"}
+        <textarea
+  value={bulkText}
+  onChange={(e) => setBulkText(e.target.value)}
+  placeholder={"예시" + String.fromCharCode(10) + "테너지05 2장" + String.fromCharCode(10) + "테너지64 2장" + String.fromCharCode(10) + "MXP 4개"}
+  rows={5}
+  className="w-full resize-none rounded-2xl border border-slate-200 bg-white px-3 py-3 outline-none"
+/>
             rows={5}
             className="w-full resize-none rounded-2xl border border-slate-200 bg-white px-3 py-3 outline-none"
           />
