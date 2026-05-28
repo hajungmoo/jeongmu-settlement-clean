@@ -3,6 +3,8 @@ import { supabase } from "./supabase.js";
 
 const today = () => new Date().toISOString().slice(0, 10);
 const storageKey = "jeongmu-settlement-tabs-v2";
+const loginStorageKey = "jeongmu-settlement-login-ok";
+const appPassword = "akdlfem1@3$";
 const cloudRowId = "main";
 
 const defaultProducts = [
@@ -32,6 +34,9 @@ function splitLines(text) {
 }
 
 export default function App() {
+  const [isUnlocked, setIsUnlocked] = useState(() => localStorage.getItem(loginStorageKey) === "yes");
+  const [passwordInput, setPasswordInput] = useState("");
+  const [loginError, setLoginError] = useState("");
   const [tab, setTab] = useState("settlement");
   const [orders, setOrders] = useState([]);
   const [products, setProducts] = useState(defaultProducts);
@@ -256,6 +261,60 @@ export default function App() {
     URL.revokeObjectURL(url);
   }
 
+  function handleLogin(event) {
+    event.preventDefault();
+    if (passwordInput === appPassword) {
+      localStorage.setItem(loginStorageKey, "yes");
+      setIsUnlocked(true);
+      setLoginError("");
+      setPasswordInput("");
+    } else {
+      setLoginError("비밀번호가 맞지 않습니다.");
+    }
+  }
+
+  function handleLogout() {
+    localStorage.removeItem(loginStorageKey);
+    setIsUnlocked(false);
+    setPasswordInput("");
+  }
+
+  if (!isUnlocked) {
+    return (
+      <main className="flex min-h-screen items-center justify-center bg-[radial-gradient(circle_at_top_left,_#ede9fe,_transparent_35%),radial-gradient(circle_at_top_right,_#dbeafe,_transparent_35%),linear-gradient(135deg,_#faf5ff,_#f0f9ff,_#ecfdf5)] p-4 text-slate-900">
+        <form
+          onSubmit={handleLogin}
+          className="w-full max-w-sm rounded-[2rem] border border-white/80 bg-white/90 p-6 shadow-2xl shadow-violet-200/70 backdrop-blur"
+        >
+          <div className="mb-5 text-center">
+            <p className="text-sm font-bold text-violet-600">Pingpong Dreamus</p>
+            <h1 className="mt-1 text-2xl font-black text-slate-900">핑퐁드림어스 정산파일</h1>
+            <p className="mt-2 text-sm text-slate-500">비밀번호를 입력하면 정산앱에 들어갈 수 있습니다.</p>
+          </div>
+
+          <input
+            type="password"
+            value={passwordInput}
+            onChange={(e) => setPasswordInput(e.target.value)}
+            placeholder="비밀번호"
+            className="w-full rounded-2xl border border-violet-100 bg-white px-4 py-4 text-center text-lg font-bold outline-none transition focus:border-fuchsia-400 focus:ring-2 focus:ring-fuchsia-100"
+          />
+
+          {loginError && <p className="mt-3 text-center text-sm font-bold text-rose-500">{loginError}</p>}
+
+          <button
+            type="submit"
+            className="mt-4 w-full rounded-2xl bg-gradient-to-r from-fuchsia-600 via-violet-600 to-cyan-600 px-4 py-4 font-black text-white shadow-lg shadow-fuchsia-200 transition active:scale-95"
+          >
+            로그인
+          </button>
+
+          <p className="mt-4 text-center text-xs text-slate-400">기본 비밀번호: pingpong1234</p>
+        </form>
+      </main>
+    );
+  }
+
   return (
     <main className="min-h-screen bg-[radial-gradient(circle_at_top_left,_#ede9fe,_transparent_35%),radial-gradient(circle_at_top_right,_#dbeafe,_transparent_35%),linear-gradient(135deg,_#faf5ff,_#f0f9ff,_#ecfdf5)] pb-28 text-slate-900">
       <div className="mx-auto max-w-5xl space-y-5 p-4">
@@ -269,9 +328,17 @@ export default function App() {
               <span className="rounded-full bg-white/20 px-3 py-1 text-xs font-bold text-white shadow-sm backdrop-blur">
                 {koreanDate(today())}
               </span>
-              <span className="rounded-full bg-emerald-300/25 px-3 py-1 text-xs font-bold text-emerald-50 shadow-sm">
-                {savedText}
-              </span>
+              <div className="flex gap-2">
+                <span className="rounded-full bg-emerald-300/25 px-3 py-1 text-xs font-bold text-emerald-50 shadow-sm">
+                  {savedText}
+                </span>
+                <button
+                  onClick={handleLogout}
+                  className="rounded-full bg-white/15 px-3 py-1 text-xs font-bold text-white shadow-sm backdrop-blur transition hover:bg-white/25"
+                >
+                  로그아웃
+                </button>
+              </div>
             </div>
 
             <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
