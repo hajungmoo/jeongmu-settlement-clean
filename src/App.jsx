@@ -344,7 +344,7 @@ if (!isUnlocked) {
       <div className="pointer-events-none absolute inset-0">
         
         <img
-  src="/dragon.png"
+  src="./dragon.png"
   alt="dragon"
   className="absolute left-1/2 top-1/2 w-[1100px] -translate-x-1/2 -translate-y-1/2 opacity-20 select-none"
 />
