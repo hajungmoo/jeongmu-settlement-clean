@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { supabase } from "./supabase.js";
-function downloadBackup(orders, products) {
+downloadBackup(calculatedOrders, products)
   const backupData = {
     orders,
     products,
@@ -500,8 +500,8 @@ function SettlementPage({
           >
             엑셀 다운로드
           </button>
-          <button
-  onClick={() => downloadBackup(orders, products)}
+        <button
+  onClick={() => downloadBackup(calculatedOrders, products)}
   className="rounded-2xl bg-purple-600 px-4 py-3 text-sm font-bold text-white shadow-lg hover:scale-105 transition"
 >
   전체 백업
