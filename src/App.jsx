@@ -102,7 +102,7 @@ export default function App() {
 
   function addOrder(productName = products[0]?.name || "") {
     setOrders((prev) => [
-      { id: Date.now(), date: today(), buyer: "", productName, qty: 1 },
+      { id: Date.now(), date: today(), buyer: "", productName, qty: 1, done: false },
       ...prev,
     ]);
     setTab("settlement");
@@ -135,6 +135,7 @@ export default function App() {
           buyer: bulkBuyer.trim(),
           productName: findBestProductName(rawName),
           qty,
+          done: false,
         };
       })
       .filter(Boolean);
@@ -189,7 +190,7 @@ export default function App() {
   }
 
   function downloadExcelCsv() {
-    const headers = ["날짜", "주문자", "용품명", "수량", "받는가격", "판매가격", "총받는가격", "총판매금액", "정산금"];
+    const headers = ["날짜", "주문자", "용품명", "수량", "받는가격", "판매가격", "총받는가격", "총판매금액", "정산금", "완료여부"];
     const rows = calculatedOrders.map((order) => [
       koreanDate(order.date),
       order.buyer || "",
@@ -200,13 +201,14 @@ export default function App() {
       order.totalBuy || 0,
       order.totalSell || 0,
       order.profit || 0,
+      order.done ? "완료" : "미완료",
     ]);
-    const summaryRows = [[], ["합계", "", "", "", "", "", totals.totalBuy, totals.totalSell, totals.profit]];
+    const summaryRows = [[], ["합계", "", "", "", "", "", totals.totalBuy, totals.totalSell, totals.profit, ""]];
     const escapeCsv = (value) => `"${String(value).replaceAll('"', '""')}"`;
     const csvContent = [headers, ...rows, ...summaryRows]
       .map((row) => row.map(escapeCsv).join(","))
       .join(String.fromCharCode(10));
-    const blob = new Blob(["\ufeff" + csvContent], { type: "text/csv;charset=utf-8;" });
+    const blob = new Blob(["﻿" + csvContent], { type: "text/csv;charset=utf-8;" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
@@ -378,7 +380,14 @@ function SettlementPage({
         ) : (
           <div className="space-y-3">
             {calculatedOrders.map((order) => (
-              <article key={order.id} className="rounded-[1.7rem] border border-violet-100 bg-gradient-to-br from-white via-violet-50/60 to-cyan-50/70 p-4 shadow-md shadow-violet-100/60">
+              <article
+                key={order.id}
+                className={`rounded-[1.7rem] border p-4 shadow-md ${
+                  order.done
+                    ? "border-emerald-200 bg-gradient-to-br from-emerald-50 via-white to-cyan-50 shadow-emerald-100/70"
+                    : "border-violet-100 bg-gradient-to-br from-white via-violet-50/60 to-cyan-50/70 shadow-violet-100/60"
+                }`}
+              >
                 <div className="mb-3 flex items-center justify-between gap-2">
                   <input
                     type="date"
@@ -386,12 +395,24 @@ function SettlementPage({
                     onChange={(e) => updateOrder(order.id, "date", e.target.value)}
                     className="rounded-2xl border border-slate-200 bg-white px-3 py-2 text-sm outline-none focus:border-violet-400"
                   />
-                  <button
-                    onClick={() => deleteOrder(order.id)}
-                    className="rounded-2xl bg-rose-100 px-3 py-2 text-sm font-bold text-rose-600 transition hover:bg-rose-200 active:scale-95"
-                  >
-                    삭제
-                  </button>
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => updateOrder(order.id, "done", !order.done)}
+                      className={`rounded-2xl px-3 py-2 text-sm font-bold transition active:scale-95 ${
+                        order.done
+                          ? "bg-emerald-600 text-white shadow-md shadow-emerald-200"
+                          : "bg-slate-200 text-slate-600 hover:bg-slate-300"
+                      }`}
+                    >
+                      {order.done ? "완료" : "미완료"}
+                    </button>
+                    <button
+                      onClick={() => deleteOrder(order.id)}
+                      className="rounded-2xl bg-rose-100 px-3 py-2 text-sm font-bold text-rose-600 transition hover:bg-rose-200 active:scale-95"
+                    >
+                      삭제
+                    </button>
+                  </div>
                 </div>
 
                 <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
