@@ -70,12 +70,17 @@ const [currentUser, setCurrentUser] = useState(() => {
 
         if (error) throw error;
 
-        if (data?.data) {
-          if (Array.isArray(data.data.orders)) setOrders(data.data.orders);
-          if (Array.isArray(data.data.products) && data.data.products.length > 0) {
-            setProducts(data.data.products);
-          }
-        }
+if (data?.data) {
+  setOrders(Array.isArray(data.data.orders) ? data.data.orders : []);
+  setProducts(
+    Array.isArray(data.data.products) && data.data.products.length > 0
+      ? data.data.products
+      : defaultProducts
+  );
+} else {
+  setOrders([]);
+  setProducts(defaultProducts);
+}
 
         setSavedText("클라우드 연결됨");
       } catch (error) {
@@ -96,7 +101,7 @@ const [currentUser, setCurrentUser] = useState(() => {
     }
 
     loadCloudData();
-  }, []);
+  }, [currentUser.rowId]);
 
   useEffect(() => {
     const channel = supabase
@@ -534,8 +539,7 @@ function handleLogout() {
   setCurrentUser(defaultUser);
   setPasswordInput("");
   setUserIdInput("");
-  setOrders([]);
-setProducts(defaultProducts);
+ 
 }
 
   if (!isUnlocked) {
