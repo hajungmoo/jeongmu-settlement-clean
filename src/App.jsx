@@ -434,6 +434,64 @@ function backupAllData() {
 
   URL.revokeObjectURL(url);
 }
+function restoreAllData(event) {
+  const file = event.target.files?.[0];
+  if (!file) return;
+
+  if (
+    !confirm(
+      "백업 파일로 전체 복원할까요? 현재 데이터가 덮어쓰기 됩니다."
+    )
+  ) {
+    event.target.value = "";
+    return;
+  }
+
+  const reader = new FileReader();
+
+  reader.onload = async () => {
+    try {
+      const backup = JSON.parse(reader.result);
+
+      if (
+        !Array.isArray(backup.orders) ||
+        !Array.isArray(backup.products)
+      ) {
+        alert("올바른 백업 파일이 아닙니다.");
+        return;
+      }
+
+      setOrders(backup.orders);
+      setProducts(backup.products);
+
+      localStorage.setItem(
+        storageKey,
+        JSON.stringify({
+          orders: backup.orders,
+          products: backup.products,
+        })
+      );
+
+      await supabase.from("app_data").upsert({
+        id: cloudRowId,
+        data: {
+          orders: backup.orders,
+          products: backup.products,
+        },
+        updated_at: new Date().toISOString(),
+      });
+
+      alert("복원이 완료되었습니다.");
+    } catch (error) {
+      console.error(error);
+      alert("복원 실패: 백업 파일을 확인해주세요.");
+    } finally {
+      event.target.value = "";
+    }
+  };
+
+  reader.readAsText(file);
+} 
   function handleLogin(event) {
     event.preventDefault();
     if (passwordInput === appPassword) {
