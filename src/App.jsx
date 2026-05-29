@@ -102,7 +102,7 @@ const activeRowId = activeUser.rowId;
     }
 
     loadCloudData();
-  }, [activeRowId]);
+  }, []);
 
   useEffect(() => {
     const channel = supabase
