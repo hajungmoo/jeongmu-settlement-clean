@@ -413,7 +413,27 @@ function parseBulkOrders() {
     a.click();
     URL.revokeObjectURL(url);
   }
+function backupAllData() {
+  const backup = {
+    exportDate: new Date().toISOString(),
+    orders,
+    products,
+  };
 
+  const blob = new Blob(
+    [JSON.stringify(backup, null, 2)],
+    { type: "application/json" }
+  );
+
+  const url = URL.createObjectURL(blob);
+
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `핑퐁드림어스_전체백업_${today()}.json`;
+  a.click();
+
+  URL.revokeObjectURL(url);
+}
   function handleLogin(event) {
     event.preventDefault();
     if (passwordInput === appPassword) {
@@ -541,6 +561,7 @@ function parseBulkOrders() {
             updateOrder={updateOrder}
             deleteOrder={deleteOrder}
             downloadExcelCsv={downloadExcelCsv}
+            backupAllData={backupAllData}
           />
         ) : (
           <ProductPage
@@ -580,6 +601,7 @@ function SettlementPage({
   updateOrder,
   deleteOrder,
   downloadExcelCsv,
+  backupAllData,
 }) {
   const placeholderText =
     "예시" +
@@ -604,9 +626,21 @@ function SettlementPage({
             <h2 className="text-lg font-black text-yellow-300">엑셀 다운로드</h2>
             <p className="text-xs text-yellow-100/50">현재 정산 내역을 CSV 파일로 저장합니다.</p>
           </div>
-          <button onClick={downloadExcelCsv} className="rounded-2xl bg-yellow-400 px-4 py-3 font-black text-black">
-            엑셀 다운로드
-          </button>
+          <div className="flex gap-2">
+  <button
+    onClick={downloadExcelCsv}
+    className="rounded-2xl bg-yellow-400 px-4 py-3 font-black text-black"
+  >
+    엑셀 다운로드
+  </button>
+
+  <button
+    onClick={backupAllData}
+    className="rounded-2xl bg-emerald-600 px-4 py-3 font-black text-white"
+  >
+    전체 백업
+  </button>
+</div>
         </div>
       </section>
 
