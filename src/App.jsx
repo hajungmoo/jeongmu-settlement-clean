@@ -187,71 +187,103 @@ export default function App() {
     setTab("settlement");
   }
 
-  function parseBulkOrders() {
-    const parsed = splitLines(bulkText)
-      .map((line) => {
-        const parts = line.replaceAll(",", " ").split(" ").filter(Boolean);
-        if (parts.length < 2) return null;
+function parseBulkOrders() {
+  const ignoreWords = [
+    "택배비",
+    "총액",
+    "전잔액",
+    "잔액",
+    "입금",
+    "입금완료",
+    "송금",
+    "발주",
+    "받았어요",
+    "감사합니다",
+    "고맙습니다",
+  ];
 
-        const last = parts[parts.length - 1];
-        const qtyText = last
-          .replaceAll("장", "")
-          .replaceAll("개", "")
-          .replaceAll("켤레", "")
-          .replaceAll("벌", "")
-          .replaceAll("자루", "")
-          .replaceAll("박스", "")
-          .replaceAll("통", "")
-          .replaceAll("세트", "");
+  const parsed = splitLines(bulkText)
+    .map((line) => {
+      if (ignoreWords.some((word) => line.includes(word))) {
+        return null;
+      }
 
-        const qty = Number(qtyText);
-        const rawName = parts.slice(0, -1).join(" ");
-        if (!rawName || !qty) return null;
+      const parts = line.replaceAll(",", " ").split(" ").filter(Boolean);
+      if (parts.length < 1) return null;
 
-        return {
-          id: Date.now() + Math.random(),
-          date: today(),
-          buyer: bulkBuyer.trim(),
-          productName: findBestProductName(rawName),
-          qty,
-          done: false,
+      const numbers = line.match(/[0-9]+/g);
+      if (!numbers) return null;
+
+      const qty = numbers.reduce((sum, n) => sum + Number(n), 0);
+      if (!qty) return null;
+
+      let rawName = line
+        .replace(/[0-9]+/g, " ")
+        .replaceAll("장", " ")
+        .replaceAll("개", " ")
+        .replaceAll("켤레", " ")
+        .replaceAll("벌", " ")
+        .replaceAll("자루", " ")
+        .replaceAll("박스", " ")
+        .replaceAll("통", " ")
+        .replaceAll("세트", " ")
+        .replaceAll("적", " ")
+        .replaceAll("빨강", " ")
+        .replaceAll("빨", " ")
+        .replaceAll("레드", " ")
+        .replaceAll("검정", " ")
+        .replaceAll("검", " ")
+        .replaceAll("블랙", " ")
+        .trim();
+
+      rawName = rawName.split(" ").filter(Boolean).join(" ");
+
+      if (!rawName) return null;
+
+      return {
+        id: Date.now() + Math.random(),
+        date: today(),
+        buyer: bulkBuyer.trim(),
+        productName: findBestProductName(rawName),
+        qty,
+        done: false,
+      };
+    })
+    .filter(Boolean);
+
+  if (parsed.length === 0) {
+    alert("인식된 정산이 없습니다. 예: 테너지05 적2 검1");
+    return;
+  }
+
+  setOrders((prev) => {
+    const next = [...prev];
+
+    parsed.forEach((item) => {
+      const index = next.findIndex(
+        (order) =>
+          order.productName === item.productName &&
+          order.buyer === item.buyer &&
+          order.done === false
+      );
+
+      if (index >= 0) {
+        next[index] = {
+          ...next[index],
+          qty: Number(next[index].qty || 0) + Number(item.qty || 0),
         };
-      })
-      .filter(Boolean);
-
-    if (parsed.length === 0) {
-      alert("인식된 정산이 없습니다. 예: 테너지05 2장");
-      return;
-    }
-
-    setOrders((prev) => {
-      const next = [...prev];
-
-      parsed.forEach((item) => {
-        const index = next.findIndex(
-          (order) =>
-            order.productName === item.productName &&
-            order.buyer === item.buyer &&
-            order.done === false
-        );
-
-        if (index >= 0) {
-          next[index] = {
-            ...next[index],
-            qty: Number(next[index].qty || 0) + Number(item.qty || 0),
-          };
-        } else {
-          next.unshift(item);
-        }
-      });
-
-      return next;
+      } else {
+        next.unshift(item);
+      }
     });
 
-    setBulkBuyer("");
-    setBulkText("");
-    setTab("settlement");
-  }
+    return next;
+  });
+
+  setBulkBuyer("");
+  setBulkText("");
+  setTab("settlement");
+}
 
   function updateOrder(id, key, value) {
     setOrders((prev) =>
