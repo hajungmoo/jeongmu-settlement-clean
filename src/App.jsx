@@ -46,6 +46,7 @@ const [currentUser, setCurrentUser] = useState(() => {
   const savedUserId = localStorage.getItem("currentUserId");
   return users.find((user) => user.id === savedUserId) || defaultUser;
 });
+  const isAdmin = currentUser?.role === "admin";
   const [loginError, setLoginError] = useState("");
   const [tab, setTab] = useState("settlement");
   const [orders, setOrders] = useState([]);
