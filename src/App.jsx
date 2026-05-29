@@ -208,11 +208,25 @@ function parseBulkOrders() {
         return null;
       }
 
-      const parts = line.replaceAll(",", " ").split(" ").filter(Boolean);
-      if (parts.length < 1) return null;
+      const qtyMatches = line.match(/(?:적|빨강|빨|레드|검정|검|블랙)?\s*([0-9]+)\s*(?:장|개|켤레|벌|자루|박스|통|세트)?/g);
 
-      const numbers = line.match(/[0-9]+/g);
-      if (!numbers) return null;
+if (!qtyMatches) return null;
+
+let qty = 0;
+
+qtyMatches.forEach((match) => {
+  const clean = match.trim();
+
+  if (clean.includes("테너지05")) return;
+  if (clean.includes("디그닉스05")) return;
+  if (clean.includes("디그닉스09C")) return;
+  if (clean.includes("오메가7")) return;
+
+  const num = clean.match(/[0-9]+/);
+  if (num) qty += Number(num[0]);
+});
+
+if (!qty) return null;
 
       const qty = numbers.reduce((sum, n) => sum + Number(n), 0);
       if (!qty) return null;
