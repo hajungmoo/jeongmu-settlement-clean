@@ -52,7 +52,7 @@ const activeUser = isAdmin
   ? users.find((user) => user.id === adminSelectedUserId) || defaultUser
   : currentUser;
 
-const isAdmin = currentUser?.role === "admin";
+  const activeRowId = activeUser.rowId;
   const [loginError, setLoginError] = useState("");
   const [tab, setTab] = useState("settlement");
   const [orders, setOrders] = useState([]);
