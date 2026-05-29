@@ -63,7 +63,7 @@ const [currentUser, setCurrentUser] = useState(() => {
         const { data, error } = await supabase
           .from("app_data")
           .select("data")
-          .eq("id", cloudRowId)
+.eq("id", currentUser.rowId)
           .single();
 
         if (error) throw error;
@@ -105,7 +105,7 @@ const [currentUser, setCurrentUser] = useState(() => {
           event: "UPDATE",
           schema: "public",
           table: "app_data",
-          filter: `id=eq.${cloudRowId}`,
+filter: `id=eq.${currentUser.rowId}`,
         },
         (payload) => {
           const cloudData = payload.new?.data;
@@ -139,7 +139,7 @@ const [currentUser, setCurrentUser] = useState(() => {
 
         const { error } = await supabase
           .from("app_data")
-          .upsert({ id: cloudRowId, data: payload, updated_at: new Date().toISOString() });
+.upsert({ id: currentUser.rowId, data: payload, updated_at: new Date().toISOString() });
 
         if (error) throw error;
 
@@ -483,7 +483,7 @@ function restoreAllData(event) {
       );
 
       await supabase.from("app_data").upsert({
-        id: cloudRowId,
+id: currentUser.rowId,
         data: {
           orders: backup.orders,
           products: backup.products,
@@ -502,23 +502,37 @@ function restoreAllData(event) {
 
   reader.readAsText(file);
 } 
-  function handleLogin(event) {
-    event.preventDefault();
-    if (passwordInput === appPassword) {
-      localStorage.setItem(loginStorageKey, "yes");
-      setIsUnlocked(true);
-      setLoginError("");
-      setPasswordInput("");
-    } else {
-      setLoginError("비밀번호가 맞지 않습니다.");
-    }
-  }
+function handleLogin(event) {
+  event.preventDefault();
 
-  function handleLogout() {
-    localStorage.removeItem(loginStorageKey);
-    setIsUnlocked(false);
+  const foundUser = users.find(
+    (user) =>
+      user.id === userIdInput.trim() &&
+      user.password === passwordInput
+  );
+
+  if (foundUser) {
+    localStorage.setItem(loginStorageKey, "yes");
+    localStorage.setItem("currentUserId", foundUser.id);
+
+    setCurrentUser(foundUser);
+    setIsUnlocked(true);
+    setLoginError("");
     setPasswordInput("");
+    setUserIdInput("");
+  } else {
+    setLoginError("아이디 또는 비밀번호가 맞지 않습니다.");
   }
+}
+
+function handleLogout() {
+  localStorage.removeItem(loginStorageKey);
+  localStorage.removeItem("currentUserId");
+  setIsUnlocked(false);
+  setCurrentUser(defaultUser);
+  setPasswordInput("");
+  setUserIdInput("");
+}
 
   if (!isUnlocked) {
     return (
@@ -545,7 +559,13 @@ function restoreAllData(event) {
           </div>
 
           <p className="mb-4 text-sm text-yellow-100/60">비밀번호를 입력해주세요</p>
-
+<input
+  type="text"
+  value={userIdInput}
+  onChange={(e) => setUserIdInput(e.target.value)}
+  placeholder="ID"
+  className="mb-3 w-full rounded-xl border border-yellow-500/30 bg-black/70 px-5 py-4 text-center text-lg font-bold tracking-[0.15em] text-yellow-100 outline-none placeholder:text-yellow-900 focus:border-yellow-400"
+/>
           <input
             type="password"
             value={passwordInput}
