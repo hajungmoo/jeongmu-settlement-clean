@@ -228,9 +228,6 @@ qtyMatches.forEach((match) => {
 
 if (!qty) return null;
 
-      const qty = numbers.reduce((sum, n) => sum + Number(n), 0);
-      if (!qty) return null;
-
       let rawName = line
         .replace(/[0-9]+/g, " ")
         .replaceAll("장", " ")
