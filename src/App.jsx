@@ -534,6 +534,8 @@ function handleLogout() {
   setCurrentUser(defaultUser);
   setPasswordInput("");
   setUserIdInput("");
+  setOrders([]);
+setProducts(defaultProducts);
 }
 
   if (!isUnlocked) {
