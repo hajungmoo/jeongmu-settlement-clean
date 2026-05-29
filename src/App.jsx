@@ -620,6 +620,7 @@ function restoreAllData(event) {
             deleteOrder={deleteOrder}
             downloadExcelCsv={downloadExcelCsv}
             backupAllData={backupAllData}
+            restoreAllData={restoreAllData}
           />
         ) : (
           <ProductPage
@@ -660,6 +661,7 @@ function SettlementPage({
   deleteOrder,
   downloadExcelCsv,
   backupAllData,
+  restoreAllData,
 }) {
   const placeholderText =
     "예시" +
@@ -692,12 +694,23 @@ function SettlementPage({
     엑셀 다운로드
   </button>
 
-  <button
-    onClick={backupAllData}
-    className="rounded-2xl bg-emerald-600 px-4 py-3 font-black text-white"
-  >
-    전체 백업
-  </button>
+ <button
+  onClick={backupAllData}
+  className="rounded-2xl bg-emerald-600 px-4 py-3 font-black text-white"
+>
+  전체 백업
+</button>
+
+<label className="cursor-pointer rounded-2xl bg-blue-600 px-4 py-3 font-black text-white">
+  백업 복원
+  <input
+    type="file"
+    accept=".json"
+    onChange={restoreAllData}
+    className="hidden"
+  />
+</label>
+
 </div>
         </div>
       </section>
