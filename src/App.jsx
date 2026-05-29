@@ -46,7 +46,13 @@ const [currentUser, setCurrentUser] = useState(() => {
   const savedUserId = localStorage.getItem("currentUserId");
   return users.find((user) => user.id === savedUserId) || defaultUser;
 });
-  const isAdmin = currentUser?.role === "admin";
+ const isAdmin = currentUser?.role === "admin";
+
+const activeUser = isAdmin
+  ? users.find((user) => user.id === adminSelectedUserId) || defaultUser
+  : currentUser;
+
+const activeRowId = activeUser.rowId;
   const [loginError, setLoginError] = useState("");
   const [tab, setTab] = useState("settlement");
   const [orders, setOrders] = useState([]);
@@ -65,7 +71,7 @@ const [currentUser, setCurrentUser] = useState(() => {
         const { data, error } = await supabase
           .from("app_data")
           .select("data")
-.eq("id", currentUser.rowId)
+.eq("id", activeRowId)
           .single();
 
         if (error) throw error;
@@ -96,7 +102,7 @@ const [currentUser, setCurrentUser] = useState(() => {
     }
 
     loadCloudData();
-  }, []);
+  }, [activeRowId]);
 
   useEffect(() => {
     const channel = supabase
@@ -107,7 +113,7 @@ const [currentUser, setCurrentUser] = useState(() => {
           event: "UPDATE",
           schema: "public",
           table: "app_data",
-filter: `id=eq.${currentUser.rowId}`,
+filter: `id=eq.${activeRowId}`,
         },
         (payload) => {
           const cloudData = payload.new?.data;
@@ -141,7 +147,7 @@ filter: `id=eq.${currentUser.rowId}`,
 
         const { error } = await supabase
           .from("app_data")
-.upsert({ id: currentUser.rowId, data: payload, updated_at: new Date().toISOString() });
+.upsert({ id: activeRowId, data: payload, updated_at: new Date().toISOString() });
 
         if (error) throw error;
 
@@ -485,7 +491,7 @@ function restoreAllData(event) {
       );
 
       await supabase.from("app_data").upsert({
-id: currentUser.rowId,
+id: activeRowId,
         data: {
           orders: backup.orders,
           products: backup.products,
@@ -554,8 +560,20 @@ function handleLogout() {
             주문 시스템
           </p>
 {isAdmin && (
-  <div className="mb-3 rounded-xl border border-red-500 bg-red-900/30 px-4 py-2 text-center font-black text-red-300">
-    👑 관리자 모드
+  <div className="mb-3 rounded-xl border border-red-500 bg-red-900/30 p-3">
+    <div className="mb-2 text-center font-black text-red-300">
+      👑 관리자 모드
+    </div>
+
+    <select
+      value={adminSelectedUserId}
+      onChange={(e) => setAdminSelectedUserId(e.target.value)}
+      className="w-full rounded-xl border border-red-500/40 bg-black px-3 py-2 text-white"
+    >
+      <option value="jeongmu">정무</option>
+      <option value="coachA">코치A</option>
+      <option value="coachB">코치B</option>
+    </select>
   </div>
 )}
           <div className="my-8 flex items-center gap-3">
