@@ -10,7 +10,7 @@ const users = [
   { id: "coachA", name: "코치A", password: "1111", rowId: "main_coachA", role: "user" },
   { id: "coachB", name: "코치B", password: "2222", rowId: "main_coachB", role: "user" },
 ];
-const defaultUser = users[0];
+const defaultUser = users[1];
 
 const defaultProducts = [
   { id: 1, name: "테너지05", buyPrice: 63000, sellPrice: 0 },
@@ -553,23 +553,7 @@ function handleLogout() {
           <p className="mt-3 text-xl font-semibold tracking-[0.25em] text-yellow-500/80">
             주문 시스템
           </p>
-{isAdmin && (
-  <div className="mb-3 rounded-xl border border-red-500 bg-red-900/30 p-3">
-    <div className="mb-2 text-center font-black text-red-300">
-      👑 관리자 모드
-    </div>
 
-    <select
-      value={adminSelectedUserId}
-      onChange={(e) => setAdminSelectedUserId(e.target.value)}
-      className="w-full rounded-xl border border-red-500/40 bg-black px-3 py-2 text-white"
-    >
-      <option value="jeongmu">정무</option>
-      <option value="coachA">코치A</option>
-      <option value="coachB">코치B</option>
-    </select>
-  </div>
-)}
           <div className="my-8 flex items-center gap-3">
             <div className="h-px flex-1 bg-yellow-500/20" />
             <span className="text-yellow-500/50">◆</span>
