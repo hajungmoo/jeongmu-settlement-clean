@@ -208,54 +208,55 @@ function parseBulkOrders() {
         return null;
       }
 
-      const qtyMatches = line.match(/(?:적|빨강|빨|레드|검정|검|블랙)?\s*([0-9]+)\s*(?:장|개|켤레|벌|자루|박스|통|세트)?/g);
+      let productName = "";
 
-if (!qtyMatches) return null;
+      const foundProduct = products.find((product) =>
+        normalizeName(line).includes(normalizeName(product.name))
+      );
 
-let qty = 0;
+      if (foundProduct) {
+        productName = foundProduct.name;
+      } else {
+        let nameOnly = line
+          .replace(/(적|빨강|빨|레드|검정|검|블랙)\s*[0-9]+/g, " ")
+          .replace(/[0-9]+\s*(장|개|켤레|벌|자루|박스|통|세트)/g, " ")
+          .trim();
 
-qtyMatches.forEach((match) => {
-  const clean = match.trim();
+        productName = findBestProductName(nameOnly);
+      }
 
-  if (clean.includes("테너지05")) return;
-  if (clean.includes("디그닉스05")) return;
-  if (clean.includes("디그닉스09C")) return;
-  if (clean.includes("오메가7")) return;
+      const qtyMatches = line.match(
+        /(적|빨강|빨|레드|검정|검|블랙)\s*([0-9]+)/g
+      );
 
-  const num = clean.match(/[0-9]+/);
-  if (num) qty += Number(num[0]);
-});
+      let qty = 0;
 
-if (!qty) return null;
+      if (qtyMatches) {
+        qtyMatches.forEach((match) => {
+          const num = match.match(/[0-9]+/);
+          if (num) qty += Number(num[0]);
+        });
+      } else {
+        const lineWithoutProduct = productName
+          ? line.replace(productName, "")
+          : line;
 
-      let rawName = line
-        .replace(/[0-9]+/g, " ")
-        .replaceAll("장", " ")
-        .replaceAll("개", " ")
-        .replaceAll("켤레", " ")
-        .replaceAll("벌", " ")
-        .replaceAll("자루", " ")
-        .replaceAll("박스", " ")
-        .replaceAll("통", " ")
-        .replaceAll("세트", " ")
-        .replaceAll("적", " ")
-        .replaceAll("빨강", " ")
-        .replaceAll("빨", " ")
-        .replaceAll("레드", " ")
-        .replaceAll("검정", " ")
-        .replaceAll("검", " ")
-        .replaceAll("블랙", " ")
-        .trim();
+        const normalQty = lineWithoutProduct.match(
+          /([0-9]+)\s*(장|개|켤레|벌|자루|박스|통|세트)?/
+        );
 
-      rawName = rawName.split(" ").filter(Boolean).join(" ");
+        if (normalQty) {
+          qty = Number(normalQty[1]);
+        }
+      }
 
-      if (!rawName) return null;
+      if (!productName || !qty) return null;
 
       return {
         id: Date.now() + Math.random(),
         date: today(),
         buyer: bulkBuyer.trim(),
-        productName: findBestProductName(rawName),
+        productName,
         qty,
         done: false,
       };
