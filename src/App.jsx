@@ -57,6 +57,14 @@ const [currentUser, setCurrentUser] = useState(() => {
   const [bulkText, setBulkText] = useState("");
   const [adminSelectedUserId, setAdminSelectedUserId] = useState("jeongmu");
   const [priceBulkText, setPriceBulkText] = useState("");
+  const [showSplash, setShowSplash] = useState(true);
+  useEffect(() => {
+  const timer = setTimeout(() => {
+    setShowSplash(false);
+  }, 1800);
+
+  return () => clearTimeout(timer);
+}, []);
   useEffect(() => {
     async function loadCloudData() {
       try {
@@ -541,7 +549,32 @@ function handleLogout() {
   setUserIdInput("");
  
 }
+if (showSplash) {
+  return (
+    <main className="relative flex min-h-screen items-center justify-center overflow-hidden bg-black">
+      <img
+        src="/dragon.png"
+        className="absolute inset-0 h-full w-full object-cover opacity-90"
+      />
 
+      <div className="absolute inset-0 bg-black/70" />
+
+      <div className="relative z-10 text-center">
+        <h1 className="bg-gradient-to-b from-yellow-100 via-yellow-400 to-yellow-700 bg-clip-text text-6xl font-black text-transparent">
+          핑퐁드림어스
+        </h1>
+
+        <p className="mt-4 text-xl font-bold tracking-[0.3em] text-yellow-400">
+          주문 시스템
+        </p>
+
+        <p className="mt-8 animate-pulse text-yellow-300">
+          Loading...
+        </p>
+      </div>
+    </main>
+  );
+}
   if (!isUnlocked) {
     return (
       <main className="relative flex min-h-screen items-center justify-center overflow-hidden bg-black p-4 text-yellow-100">
