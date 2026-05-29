@@ -83,7 +83,7 @@ const [currentUser, setCurrentUser] = useState(() => {
         setSavedText("클라우드 실패 · 기기 저장");
 
         try {
-          const saved = localStorage.getItem(storageKey);
+          const saved = localStorage.getItem(`${storageKey}-${currentUser.id}`);
           if (saved) {
             const localData = JSON.parse(saved);
             if (Array.isArray(localData.orders)) setOrders(localData.orders);
@@ -137,7 +137,7 @@ filter: `id=eq.${currentUser.rowId}`,
     const timer = setTimeout(async () => {
       try {
         const payload = { orders, products };
-        localStorage.setItem(storageKey, JSON.stringify(payload));
+        localStorage.setItem(`${storageKey}-${currentUser.id}`, JSON.stringify(payload));
 
         const { error } = await supabase
           .from("app_data")
@@ -476,13 +476,13 @@ function restoreAllData(event) {
       setOrders(backup.orders);
       setProducts(backup.products);
 
-      localStorage.setItem(
-        storageKey,
-        JSON.stringify({
-          orders: backup.orders,
-          products: backup.products,
-        })
-      );
+localStorage.setItem(
+  `${storageKey}-${currentUser.id}`,
+  JSON.stringify({
+    orders: backup.orders,
+    products: backup.products,
+  })
+);
 
       await supabase.from("app_data").upsert({
 id: currentUser.rowId,
