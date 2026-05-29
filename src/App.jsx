@@ -5,11 +5,11 @@ const today = () => new Date().toISOString().slice(0, 10);
 const storageKey = "jeongmu-settlement-tabs-v2";
 const loginStorageKey = "jeongmu-settlement-login-ok";
 const users = [
-  { id: "jeongmu", name: "정무", password: "12345", rowId: "main_jeongmu" },
-  { id: "coachA", name: "코치A", password: "1111", rowId: "main_coachA" },
-  { id: "coachB", name: "코치B", password: "2222", rowId: "main_coachB" },
+  { id: "admin", name: "관리자", password: "9999", rowId: "main_admin", role: "admin" },
+  { id: "jeongmu", name: "정무", password: "12345", rowId: "main_jeongmu", role: "user" },
+  { id: "coachA", name: "코치A", password: "1111", rowId: "main_coachA", role: "user" },
+  { id: "coachB", name: "코치B", password: "2222", rowId: "main_coachB", role: "user" },
 ];
-
 const defaultUser = users[0];
 
 const defaultProducts = [
@@ -46,6 +46,7 @@ const [currentUser, setCurrentUser] = useState(() => {
   const savedUserId = localStorage.getItem("currentUserId");
   return users.find((user) => user.id === savedUserId) || defaultUser;
 });
+  const isAdmin = currentUser?.role === "admin";
   const [loginError, setLoginError] = useState("");
   const [tab, setTab] = useState("settlement");
   const [orders, setOrders] = useState([]);
@@ -54,6 +55,7 @@ const [currentUser, setCurrentUser] = useState(() => {
   const [newProduct, setNewProduct] = useState({ name: "", buyPrice: "", sellPrice: "" });
   const [bulkBuyer, setBulkBuyer] = useState("");
   const [bulkText, setBulkText] = useState("");
+  const [adminSelectedUserId, setAdminSelectedUserId] = useState("jeongmu");
   const [priceBulkText, setPriceBulkText] = useState("");
   useEffect(() => {
     async function loadCloudData() {
@@ -551,7 +553,11 @@ function handleLogout() {
           <p className="mt-3 text-xl font-semibold tracking-[0.25em] text-yellow-500/80">
             주문 시스템
           </p>
-
+{isAdmin && (
+  <div className="mb-3 rounded-xl border border-red-500 bg-red-900/30 px-4 py-2 text-center font-black text-red-300">
+    👑 관리자 모드
+  </div>
+)}
           <div className="my-8 flex items-center gap-3">
             <div className="h-px flex-1 bg-yellow-500/20" />
             <span className="text-yellow-500/50">◆</span>
