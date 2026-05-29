@@ -5,10 +5,10 @@ const today = () => new Date().toISOString().slice(0, 10);
 const storageKey = "jeongmu-settlement-tabs-v2";
 const loginStorageKey = "jeongmu-settlement-login-ok";
 const users = [
-  { id: "admin", name: "관리자", password: "9999", rowId: "main_admin", role: "admin" },
-  { id: "jeongmu", name: "정무", password: "12345", rowId: "main_jeongmu", role: "user" },
-  { id: "coachA", name: "코치A", password: "1111", rowId: "main_coachA", role: "user" },
-  { id: "coachB", name: "코치B", password: "2222", rowId: "main_coachB", role: "user" },
+  { id: "admin", name: "관리자", password: "akdlfem1@3$", rowId: "main_gkwjdan", role: "admin" },
+  { id: "jeongmu", name: "정무", password: "0519", rowId: "main_dremers", role: "user" },
+  { id: "coachA", name: "코치A", password: "9808", rowId: "main_hyunseo", role: "user" },
+  { id: "coachB", name: "코치B", password: "9402", rowId: "main_hhh9402", role: "user" },
 ];
 const defaultUser = users[1];
 
