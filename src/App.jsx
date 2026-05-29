@@ -4,8 +4,13 @@ import { supabase } from "./supabase.js";
 const today = () => new Date().toISOString().slice(0, 10);
 const storageKey = "jeongmu-settlement-tabs-v2";
 const loginStorageKey = "jeongmu-settlement-login-ok";
-const appPassword = "12345";
-const cloudRowId = "main";
+const users = [
+  { id: "jeongmu", name: "정무", password: "12345", rowId: "main_jeongmu" },
+  { id: "coachA", name: "코치A", password: "1111", rowId: "main_coachA" },
+  { id: "coachB", name: "코치B", password: "2222", rowId: "main_coachB" },
+];
+
+const defaultUser = users[0];
 
 const defaultProducts = [
   { id: 1, name: "테너지05", buyPrice: 63000, sellPrice: 0 },
@@ -36,6 +41,11 @@ function splitLines(text) {
 export default function App() {
   const [isUnlocked, setIsUnlocked] = useState(() => localStorage.getItem(loginStorageKey) === "yes");
   const [passwordInput, setPasswordInput] = useState("");
+  const [userIdInput, setUserIdInput] = useState("");
+const [currentUser, setCurrentUser] = useState(() => {
+  const savedUserId = localStorage.getItem("currentUserId");
+  return users.find((user) => user.id === savedUserId) || defaultUser;
+});
   const [loginError, setLoginError] = useState("");
   const [tab, setTab] = useState("settlement");
   const [orders, setOrders] = useState([]);
