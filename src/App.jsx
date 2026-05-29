@@ -622,6 +622,11 @@ function handleLogout() {
                 <h1 className="mt-3 bg-gradient-to-r from-yellow-100 via-yellow-400 to-yellow-700 bg-clip-text text-3xl font-black tracking-tight text-transparent sm:text-4xl">
                   핑퐁드림어스 정산파일
                 </h1>
+                {isAdmin && (
+  <div className="mt-3 rounded-xl border border-red-500 bg-red-900/30 px-4 py-2 text-center font-black text-red-300">
+    👑 관리자 모드
+  </div>
+)}
                 <p className="mt-2 text-sm font-medium text-yellow-100/60">
                   용품 주문 · 정산 · 가격 관리를 한 번에
                 </p>
