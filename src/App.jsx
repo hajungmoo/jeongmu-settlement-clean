@@ -52,7 +52,7 @@ const activeUser = isAdmin
   ? users.find((user) => user.id === adminSelectedUserId) || defaultUser
   : currentUser;
 
-const activeRowId = activeUser.rowId;
+const currentUser.rowId = activeUser.rowId;
   const [loginError, setLoginError] = useState("");
   const [tab, setTab] = useState("settlement");
   const [orders, setOrders] = useState([]);
@@ -71,7 +71,7 @@ const activeRowId = activeUser.rowId;
         const { data, error } = await supabase
           .from("app_data")
           .select("data")
-.eq("id", activeRowId)
+.eq("id", currentUser.rowId)
           .single();
 
         if (error) throw error;
@@ -113,7 +113,7 @@ const activeRowId = activeUser.rowId;
           event: "UPDATE",
           schema: "public",
           table: "app_data",
-filter: `id=eq.${activeRowId}`,
+filter: `id=eq.${currentUser.rowId}`,
         },
         (payload) => {
           const cloudData = payload.new?.data;
@@ -147,7 +147,7 @@ filter: `id=eq.${activeRowId}`,
 
         const { error } = await supabase
           .from("app_data")
-.upsert({ id: activeRowId, data: payload, updated_at: new Date().toISOString() });
+.upsert({ id: currentUser.rowId, data: payload, updated_at: new Date().toISOString() });
 
         if (error) throw error;
 
@@ -491,7 +491,7 @@ function restoreAllData(event) {
       );
 
       await supabase.from("app_data").upsert({
-id: activeRowId,
+id: currentUser.rowId,
         data: {
           orders: backup.orders,
           products: backup.products,
